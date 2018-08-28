@@ -22,7 +22,7 @@ protected:
   class Representation{
   public:
     virtual bool getAdjacency(int v1, int v2)= 0;
-    virtual void setAdjacency(int v1, int v2, bool value)= 0;
+    virtual void addAdjacency(int v1, int v2)= 0;
     int getDegree(int vertex);
     void getNeighbours(int vertex, list<int> &neighbours);
     virtual ~Representation() = default;;
@@ -39,7 +39,7 @@ protected:
 
     ~AdjacencyMatrix() override;
     bool getAdjacency(int v1, int v2) override;
-    void setAdjacency(int v1, int v2, bool value) override;
+    void addAdjacency(int v1, int v2) override;
 
   private:
     int calc1DIndex(int v1, int v2);
@@ -52,7 +52,7 @@ protected:
 
     ~AdjacencyList() override;
     bool getAdjacency(int v1, int v2) override;
-    void setAdjacency(int v1, int v2, bool value) override;
+    void addAdjacency(int v1, int v2) override;
 
   private:
     list<int> **adjacencies;

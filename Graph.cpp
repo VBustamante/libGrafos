@@ -57,8 +57,8 @@ Graph::AdjacencyMatrix::AdjacencyMatrix(ifstream &file) {
 
   int a, b;
   while(file >> a >> b){
-    setAdjacency(a, b, true);
-    setAdjacency(b, a, true);
+    addAdjacency(a, b);
+    addAdjacency(b, a);
     edgeCount++;
   }
 }
@@ -78,8 +78,8 @@ bool Graph::AdjacencyMatrix::getAdjacency(int v1, int v2) {
   return adjacencies[calc1DIndex(v1, v2)];
 }
 
-void Graph::AdjacencyMatrix::setAdjacency(int v1, int v2, bool value) {
-  adjacencies[calc1DIndex(v1, v2)] = value;
+void Graph::AdjacencyMatrix::addAdjacency(int v1, int v2) {
+  adjacencies[calc1DIndex(v1, v2)] = true;
 }
 
 // List
@@ -93,8 +93,8 @@ Graph::AdjacencyList::AdjacencyList(ifstream &file) {
 
   int a, b;
   while(file >> a >> b){
-    setAdjacency(a, b, true);
-    setAdjacency(b, a, true);
+    addAdjacency(a, b);
+    addAdjacency(b, a);
     edgeCount++;
   }
 }
@@ -107,10 +107,19 @@ Graph::AdjacencyList::~AdjacencyList() {
 
 
 bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
+  list<int> *v1Neighbours = adjacencies[v1];
+  bool found = false;
+  auto i = v1Neighbours->begin();
+
+  while(){
+
+  }
+
   return true;
 }
 
-void Graph::AdjacencyList::setAdjacency(int v1, int v2, bool value) {
-
+void Graph::AdjacencyList::addAdjacency(int v1, int v2) {
+  list<int> *v1Neighbours = adjacencies[v1];
+  v1Neighbours->push_front(v2);
 }
 
