@@ -20,25 +20,60 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
 
   cout << "Creating " << rString << " from " << fileName << endl;
 
+  input.close();
+}
+
+Graph::~Graph() {
+  delete(representation);
+}
+
+int Graph::Representation::getDegree(int vertex){
+  int degree = 0;
+  for(int i =1; i<= vertexCount; i++){
+    if(getAdjacency(vertex, i)) degree++;
+  }
+  return degree;
+}
+
+void Graph::Representation::getNeighbours(int vertex, list<int> &neighbours) {
+  for(int i =1; i<= vertexCount; i++){
+    if(getAdjacency(vertex, i)) neighbours.push_back(i);
+  }
 }
 
 Graph::AdjacencyMatrix::AdjacencyMatrix(ifstream &file) {
-  string line;
-  getline(file, line);
-  cout << "Vertex count: " << line << endl;
+  file >> vertexCount;
+  cout << "Vertex count: " << vertexCount << endl;
 
-  int vcount = stoi(line);
-  adjacencies = new bool[vcount * vcount];
+  // We store the matrix on a flat array to optimize memory access.
+  // Matrices  imply more mallocs which imply heap fragmentation.
+  adjacencies = new bool[vertexCount * vertexCount];
 
-  // TODO fill adjacencies from file
+  for (int i=0; i<vertexCount * vertexCount; i++) adjacencies[i] = false;
+
+  int a, b;
+  while(file >> a >> b){
+    setAdjacency(a, b, true);
+    setAdjacency(b, a, true);
+    edgeCount++;
+  }
 }
 
 Graph::AdjacencyMatrix::~AdjacencyMatrix() {
   delete[] adjacencies;
 }
 
+// We need this to access our flat matrix
+// Also for some reason the indexes start at one so we have to deal with that
+int Graph::AdjacencyMatrix::calc1DIndex(int v1, int v2) {
+  return (v1 - 1)*vertexCount + (v2 - 1);
+}
 
-int *Graph::AdjacencyMatrix::getNeighbours(int vertex) {
-  return GraphRepresentation::getNeighbours(vertex);
+bool Graph::AdjacencyMatrix::getAdjacency(int v1, int v2) {
+  return adjacencies[calc1DIndex(v1, v2)];
+}
+
+void Graph::AdjacencyMatrix::setAdjacency(int v1, int v2, bool value) {
+  adjacencies[calc1DIndex(v1, v2)] = value;
 }
 

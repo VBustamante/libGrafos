@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "main.h"
 #include "Graph.h"
 
 using namespace std;

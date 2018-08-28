@@ -8,31 +8,43 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-using namespace std;
+#include <list>
 
+using namespace std;
 
 class Graph {
 public:
   enum class RepresentationType { ADJ_MATRIX, ADJ_LIST};
-  Graph(std::string fileName, RepresentationType representationType);  // This is the constructor
-
+  Graph(std::string fileName, RepresentationType representationType);
+  ~Graph();
 protected:
-  RepresentationType  representationType;
-  class GraphRepresentation{
+  class Representation{
   public:
-    virtual int *getNeighbours(int vertex) {cout << "Call to pure virtual method GraphRepresentation::getNeighbours" << endl;};
+    virtual bool getAdjacency(int v1, int v2)= 0;
+    virtual void setAdjacency(int v1, int v2, bool value)= 0;
+    int getDegree(int vertex);
+    void getNeighbours(int vertex, list<int> &neighbours);
+
+  protected:
+    Representation() = default; //protected constructor makes the class abstract
+    int vertexCount=0;
+    int edgeCount=0;
   };
 
-  class AdjacencyMatrix : public GraphRepresentation{
+  class AdjacencyMatrix : public Representation{
   public:
     explicit AdjacencyMatrix(ifstream &file);
     ~AdjacencyMatrix();
-    int *getNeighbours(int vertex) override;
+    bool getAdjacency(int v1, int v2) override;
+    void setAdjacency(int v1, int v2, bool value) override;
 
   private:
+    int calc1DIndex(int v1, int v2);
     bool *adjacencies;
   };
-  GraphRepresentation *representation;
+
+  RepresentationType  representationType;
+  Representation *representation;
 };
 
 #endif //LIBGRAFOS_GRAPH_H
