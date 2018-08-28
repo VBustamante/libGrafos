@@ -14,7 +14,8 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
       representation = new Graph::AdjacencyMatrix(input);
       break;
     case Graph::RepresentationType::ADJ_LIST:
-      rString = "List (NOT IMPLEMENTED)";
+      rString = "List (SEMI IMPLEMENTED)";
+      representation = new Graph::AdjacencyList(input);
       break;
   }
 
@@ -24,9 +25,11 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
 }
 
 Graph::~Graph() {
-  delete(representation);
+  cout << "~Graph"<<endl;
+  delete representation;
 }
 
+// Internal Classes
 int Graph::Representation::getDegree(int vertex){
   int degree = 0;
   for(int i =1; i<= vertexCount; i++){
@@ -41,6 +44,7 @@ void Graph::Representation::getNeighbours(int vertex, list<int> &neighbours) {
   }
 }
 
+// Matrix
 Graph::AdjacencyMatrix::AdjacencyMatrix(ifstream &file) {
   file >> vertexCount;
   cout << "Vertex count: " << vertexCount << endl;
@@ -60,6 +64,7 @@ Graph::AdjacencyMatrix::AdjacencyMatrix(ifstream &file) {
 }
 
 Graph::AdjacencyMatrix::~AdjacencyMatrix() {
+  cout << "~AdjacencyMatrix"<<endl;
   delete[] adjacencies;
 }
 
@@ -75,5 +80,37 @@ bool Graph::AdjacencyMatrix::getAdjacency(int v1, int v2) {
 
 void Graph::AdjacencyMatrix::setAdjacency(int v1, int v2, bool value) {
   adjacencies[calc1DIndex(v1, v2)] = value;
+}
+
+// List
+Graph::AdjacencyList::AdjacencyList(ifstream &file) {
+  file >> vertexCount;
+  cout << "Vertex count: " << vertexCount << endl;
+
+  adjacencies = new list<int> *[vertexCount];
+
+  for (int i=0; i<vertexCount; i++) adjacencies[i] = new list<int>;
+
+  int a, b;
+  while(file >> a >> b){
+    setAdjacency(a, b, true);
+    setAdjacency(b, a, true);
+    edgeCount++;
+  }
+}
+
+Graph::AdjacencyList::~AdjacencyList() {
+  cout << "~AdjacencyList"<<endl;
+  for (int i=0; i<vertexCount; i++) delete adjacencies[i];
+  delete[] adjacencies;
+}
+
+
+bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
+  return true;
+}
+
+void Graph::AdjacencyList::setAdjacency(int v1, int v2, bool value) {
+
 }
 

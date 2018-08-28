@@ -18,12 +18,14 @@ public:
   Graph(std::string fileName, RepresentationType representationType);
   ~Graph();
 protected:
+  // Internal Classes
   class Representation{
   public:
     virtual bool getAdjacency(int v1, int v2)= 0;
     virtual void setAdjacency(int v1, int v2, bool value)= 0;
     int getDegree(int vertex);
     void getNeighbours(int vertex, list<int> &neighbours);
+    virtual ~Representation() = default;;
 
   protected:
     Representation() = default; //protected constructor makes the class abstract
@@ -34,7 +36,8 @@ protected:
   class AdjacencyMatrix : public Representation{
   public:
     explicit AdjacencyMatrix(ifstream &file);
-    ~AdjacencyMatrix();
+
+    ~AdjacencyMatrix() override;
     bool getAdjacency(int v1, int v2) override;
     void setAdjacency(int v1, int v2, bool value) override;
 
@@ -43,6 +46,19 @@ protected:
     bool *adjacencies;
   };
 
+  class AdjacencyList : public Representation{
+  public:
+    explicit AdjacencyList(ifstream &file);
+
+    ~AdjacencyList() override;
+    bool getAdjacency(int v1, int v2) override;
+    void setAdjacency(int v1, int v2, bool value) override;
+
+  private:
+    list<int> **adjacencies;
+  };
+
+  // Data itself
   RepresentationType  representationType;
   Representation *representation;
 };
