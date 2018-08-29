@@ -7,9 +7,9 @@ using namespace std;
 
 int main() {
   cout << "Startup!" << endl;
-  Graph *matrix = new Graph("graphs/as_graph.txt", Graph::RepresentationType::ADJ_LIST);
-
+  Graph *g = new Graph("graphs/as_graph.txt", Graph::RepresentationType::ADJ_LIST);
+  g->REPL();
   cout << "Cleanup!" << endl;
-  delete matrix;
+  delete g;
   return 0;
 }

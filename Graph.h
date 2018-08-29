@@ -16,6 +16,7 @@ class Graph {
 public:
   enum class RepresentationType { ADJ_MATRIX, ADJ_LIST};
   Graph(std::string fileName, RepresentationType representationType);
+  void REPL();
   ~Graph();
 protected:
   // Internal Classes

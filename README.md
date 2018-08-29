@@ -7,7 +7,7 @@ Implementação de operações comuns com grafos em c++
 
 - <strike>Superclasse semivirtual Graph.cpp</strike>
 - <strike>Implementação de Graph com Matriz de Adjacências</strike>
-- Implementação de Graph com Lista de Adjacências
+- <strike>Implementação de Graph com Lista de Adjacências</strike>
 - Arquivo de saída com:
   - nº de vértices
   - nº de arestas
