@@ -16,6 +16,7 @@ class Graph {
 public:
   enum class RepresentationType { ADJ_MATRIX, ADJ_LIST};
   Graph(std::string fileName, RepresentationType representationType);
+  void dump();
   void REPL();
   ~Graph();
 protected:
@@ -24,8 +25,8 @@ protected:
   public:
     virtual bool getAdjacency(int v1, int v2)= 0;
     virtual void addAdjacency(int v1, int v2)= 0;
-    int getDegree(int vertex);
-    void getNeighbours(int vertex, list<int> &neighbours);
+    int getVertexCount(){return this->vertexCount;};
+    int getEdgeCount(){return this->edgeCount;};
     virtual ~Representation() = default;;
 
   protected:
@@ -62,6 +63,11 @@ protected:
   // Data itself
   RepresentationType  representationType;
   Representation *representation;
+
+private:
+  int getDegree(int vertex);
+
+  void getNeighbours(int vertex, list<int> &neighbours);
 };
 
 #endif //LIBGRAFOS_GRAPH_H

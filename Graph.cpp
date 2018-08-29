@@ -21,8 +21,6 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
 
   cout << "Creating " << rString << " from " << fileName << endl;
 
-
-
   input.close();
 }
 
@@ -46,36 +44,51 @@ void Graph::REPL() {
     else if(cmd == "deg") {
       int v1;
       cin >> v1;
-      cout << "Degree "<<v1<< " = " << representation->getDegree(v1) <<endl;
+      cout << "Degree "<<v1<< " = " << getDegree(v1) <<endl;
     }else{
       cout << "Unknown command"<<endl;
 
     }
     cin.clear();
     fflush(stdin);
-
-
   }while(cmd != "end");
+}
 
-  cout << "vrt 1 22" << representation->getAdjacency(1, 22) << endl;
-  cout << "vrt 1 36" <<  representation->getAdjacency(1, 36) << endl;
-  cout << "deg 1" <<  representation->getAdjacency(1, 36) << endl;
-  cout << "deg 2" <<  representation->getAdjacency(1, 36) << endl;
+void Graph::dump() {
+  cout << "Vertex Count " << representation->getVertexCount() << endl;
+  cout << "Edge Count " << representation->getEdgeCount() << endl;
 
+  int maxDegree, minDegree;
+
+  maxDegree = minDegree = getDegree(1);
+
+  for(int i=2; i<=representation->getVertexCount(); i++){
+    int d = getDegree(i);
+    if(d>maxDegree) maxDegree = d;
+    if(d<minDegree) minDegree = d;
+  }
+
+  cout << "Min Degree " << minDegree << endl;
+  cout << "Max Degree " << maxDegree << endl;
+
+  int avgDegree = (representation->getEdgeCount()*2)/representation->getVertexCount();
+  cout << "Avg Degree " << avgDegree << endl;
+
+  // mediana de grau
 }
 
 // Internal Classes
-int Graph::Representation::getDegree(int vertex){
+int Graph::getDegree(int vertex){
   int degree = 0;
-  for(int i =1; i<= vertexCount; i++){
-    if(getAdjacency(vertex, i)) degree++;
+  for(int i =1; i<= representation->getVertexCount(); i++){
+    if(representation->getAdjacency(vertex, i)) degree++;
   }
   return degree;
 }
 
-void Graph::Representation::getNeighbours(int vertex, list<int> &neighbours) {
-  for(int i =1; i<= vertexCount; i++){
-    if(getAdjacency(vertex, i)) neighbours.push_front(i);
+void Graph::getNeighbours(int vertex, list<int> &neighbours) {
+  for(int i =1; i<= representation->getVertexCount(); i++){
+    if(representation->getAdjacency(vertex, i)) neighbours.push_front(i);
   }
 }
 
