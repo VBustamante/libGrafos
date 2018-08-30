@@ -1,7 +1,10 @@
 //
 // Created by vbustamante on 27/08/2018.
 //
+#include <vector>
+#include <algorithm>
 #include "Graph.h"
+#include "GetTimeMs64.h"
 
 Graph::Graph(const std::string fileName, Graph::RepresentationType representationType) {
   ifstream input(fileName);
@@ -35,20 +38,24 @@ void Graph::REPL() {
     cout<< "LibGraph REPL >>";
     cin >> cmd;
 
+    auto start = GetTimeMs64();
     if(cmd == "end") break;
     else if(cmd == "edg") {
       int v1, v2;
-      cin >> v1 >> v2;
-      cout << "Edge "<<v1<<"<->"<<v2<< " = " << representation->getAdjacency(v1, v2) <<endl;
+      if((cin >> v1) && (cin >> v2)){
+        cout << "Edge "<<v1<<"<->"<<v2<< " = " << representation->getAdjacency(v1, v2);
+      }else cout << "Attr error";
     }
     else if(cmd == "deg") {
       int v1;
-      cin >> v1;
-      cout << "Degree "<<v1<< " = " << getDegree(v1) <<endl;
+      if((cin >> v1)){
+        cout << "Degree "<<v1<< " = " << representation->getDegree(v1);
+      }else cout << "Attr error";
     }else{
-      cout << "Unknown command"<<endl;
-
+      cout << "Unknown command";
     }
+
+    cout<<" (" << (GetTimeMs64() - start) << "ms)" << endl;
     cin.clear();
     fflush(stdin);
   }while(cmd != "end");
@@ -58,15 +65,18 @@ void Graph::dump() {
   cout << "Vertex Count " << representation->getVertexCount() << endl;
   cout << "Edge Count " << representation->getEdgeCount() << endl;
 
-  int maxDegree, minDegree;
+  vector<int> degrees(representation->getVertexCount());
+  int maxDegree=0, minDegree=representation->getVertexCount();
 
-  maxDegree = minDegree = getDegree(1);
-
-  for(int i=2; i<=representation->getVertexCount(); i++){
-    int d = getDegree(i);
+  // TODO this is taking a long time. let's try and optimize it.
+  for(int i=1; i<=representation->getVertexCount(); i++){
+    int d = representation->getDegree(i);
     if(d>maxDegree) maxDegree = d;
     if(d<minDegree) minDegree = d;
+    degrees[i-1] = d;
   }
+
+  sort(degrees.begin(), degrees.end());
 
   cout << "Min Degree " << minDegree << endl;
   cout << "Max Degree " << maxDegree << endl;
@@ -74,31 +84,16 @@ void Graph::dump() {
   int avgDegree = (representation->getEdgeCount()*2)/representation->getVertexCount();
   cout << "Avg Degree " << avgDegree << endl;
 
-  // mediana de grau
 }
 
 // Internal Classes
-int Graph::getDegree(int vertex){
-  int degree = 0;
-  for(int i =1; i<= representation->getVertexCount(); i++){
-    if(representation->getAdjacency(vertex, i)) degree++;
-  }
-  return degree;
-}
-
-void Graph::getNeighbours(int vertex, list<int> &neighbours) {
-  for(int i =1; i<= representation->getVertexCount(); i++){
-    if(representation->getAdjacency(vertex, i)) neighbours.push_front(i);
-  }
-}
 
 // Matrix
 Graph::AdjacencyMatrix::AdjacencyMatrix(ifstream &file) {
   file >> vertexCount;
-  cout << "Vertex count: " << vertexCount << endl;
 
   // We store the matrix on a flat array to optimize memory access.
-  // Matrices  imply more mallocs which imply heap fragmentation.
+  // Matrices imply more mallocs which imply heap fragmentation.
   adjacencies = new bool[vertexCount * vertexCount];
 
   for (int i=0; i<vertexCount * vertexCount; i++) adjacencies[i] = false;
@@ -130,10 +125,24 @@ void Graph::AdjacencyMatrix::addAdjacency(int v1, int v2) {
   adjacencies[calc1DIndex(v1, v2)] = true;
 }
 
+unsigned int Graph::AdjacencyMatrix::getDegree(int vertex){
+  unsigned int degree = 0;
+  for(int i =1; i<= getVertexCount(); i++){
+    if(getAdjacency(vertex, i)) degree++;
+  }
+  return degree;
+}
+
+void Graph::AdjacencyMatrix::getNeighbours(int vertex, list<int> &neighbours) {
+  for(int i =1; i<= getVertexCount(); i++){
+    if(getAdjacency(vertex, i)) neighbours.push_front(i);
+  }
+}
+
+
 // List
 Graph::AdjacencyList::AdjacencyList(ifstream &file) {
   file >> vertexCount;
-  cout << "Vertex count: " << vertexCount << endl;
 
   adjacencies = new list<int> *[vertexCount];
 
@@ -171,5 +180,17 @@ bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
 void Graph::AdjacencyList::addAdjacency(int v1, int v2) {
   list<int> *v1Neighbours = adjacencies[v1 - 1];
   v1Neighbours->push_front(v2 - 1);
+}
+
+unsigned int Graph::AdjacencyList::getDegree(int vertex) {
+  return adjacencies[vertex - 1]->size();
+}
+
+void Graph::AdjacencyList::getNeighbours(int vertex, list<int> &neighbours) {
+  list<int> *a = adjacencies[vertex - 1];
+
+  for(int n: *a){
+    neighbours.push_front(n);
+  }
 }
 

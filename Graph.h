@@ -25,23 +25,28 @@ protected:
   public:
     virtual bool getAdjacency(int v1, int v2)= 0;
     virtual void addAdjacency(int v1, int v2)= 0;
-    int getVertexCount(){return this->vertexCount;};
-    int getEdgeCount(){return this->edgeCount;};
+    virtual unsigned int getDegree(int vertex) = 0;
+    virtual void getNeighbours(int vertex, list<int> &neighbours)= 0;
+    unsigned int getVertexCount(){return this->vertexCount;};
+    unsigned int getEdgeCount(){return this->edgeCount;};
+
     virtual ~Representation() = default;;
 
   protected:
     Representation() = default; //protected constructor makes the class abstract
-    int vertexCount=0;
-    int edgeCount=0;
+    unsigned int vertexCount=0;
+    unsigned int edgeCount=0;
   };
 
   class AdjacencyMatrix : public Representation{
   public:
     explicit AdjacencyMatrix(ifstream &file);
-
     ~AdjacencyMatrix() override;
+
     bool getAdjacency(int v1, int v2) override;
     void addAdjacency(int v1, int v2) override;
+    unsigned int getDegree(int vertex) override;
+    void getNeighbours(int vertex, list<int> &neighbours) override;
 
   private:
     int calc1DIndex(int v1, int v2);
@@ -51,10 +56,12 @@ protected:
   class AdjacencyList : public Representation{
   public:
     explicit AdjacencyList(ifstream &file);
-
     ~AdjacencyList() override;
+
     bool getAdjacency(int v1, int v2) override;
     void addAdjacency(int v1, int v2) override;
+    unsigned int getDegree(int vertex) override;
+    void getNeighbours(int vertex, list<int> &neighbours) override;
 
   private:
     list<int> **adjacencies;
@@ -63,11 +70,6 @@ protected:
   // Data itself
   RepresentationType  representationType;
   Representation *representation;
-
-private:
-  int getDegree(int vertex);
-
-  void getNeighbours(int vertex, list<int> &neighbours);
 };
 
 #endif //LIBGRAFOS_GRAPH_H
