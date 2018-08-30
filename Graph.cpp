@@ -62,13 +62,14 @@ void Graph::REPL() {
 }
 
 void Graph::dump() {
+  cout << "Dumping" << endl;
+  auto start = GetTimeMs64();
   cout << "Vertex Count " << representation->getVertexCount() << endl;
   cout << "Edge Count " << representation->getEdgeCount() << endl;
 
   vector<int> degrees(representation->getVertexCount());
   int maxDegree=0, minDegree=representation->getVertexCount();
 
-  // TODO this is taking a long time. let's try and optimize it.
   for(int i=1; i<=representation->getVertexCount(); i++){
     int d = representation->getDegree(i);
     if(d>maxDegree) maxDegree = d;
@@ -84,6 +85,7 @@ void Graph::dump() {
   int avgDegree = (representation->getEdgeCount()*2)/representation->getVertexCount();
   cout << "Avg Degree " << avgDegree << endl;
 
+  cout << "Dumped  (" << (GetTimeMs64() - start) << "ms)" << endl;
 }
 
 // Internal Classes
