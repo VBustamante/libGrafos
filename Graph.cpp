@@ -124,12 +124,17 @@ void Graph::dump() {
 
   cout << "Med Degree " << midDegree << endl;
 
+  list<list<int>> cc;
+  representation->getConnectedComponents(cc);
+
+  cout << "Connected Components: " << cc.size() << endl;
 
   cout << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
 }
 
 // Internal Classes
 void Graph::Representation::getConnectedComponents(list<list<int>> &connectedComponents) {
+  vector<bool> vStatuses(32385);
 
 }
 

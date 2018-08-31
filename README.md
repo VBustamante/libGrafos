@@ -14,7 +14,7 @@ Implementação de operações comuns com grafos em c++
   - grau mínimo ✔
   - grau máximo ✔
   - grau médio ✔
-  - mediana de grau
+  - mediana de grau ✔
   - componentes conexas (em ordem decrescente de tamanho):
     - número
     - tamanho (em vértices)
