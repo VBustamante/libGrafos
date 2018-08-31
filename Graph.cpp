@@ -30,7 +30,6 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
   }
 
   int a, b;
-  input >> a;
   unsigned int lineCount = 1;
   unsigned int edgeCount = 0;
 
