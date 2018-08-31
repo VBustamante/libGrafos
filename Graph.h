@@ -28,6 +28,7 @@ protected:
     virtual unsigned int getDegree(int vertex) = 0;
     virtual void getNeighbours(int vertex, list<int> &neighbours)= 0;
     unsigned int getVertexCount(){return this->vertexCount;};
+    unsigned int setEdgeCount(unsigned int edgeCount){this->edgeCount = edgeCount;};
     unsigned int getEdgeCount(){return this->edgeCount;};
 
     virtual ~Representation() = default;;
@@ -40,7 +41,7 @@ protected:
 
   class AdjacencyMatrix : public Representation{
   public:
-    explicit AdjacencyMatrix(ifstream &file);
+    explicit AdjacencyMatrix(unsigned int vertexCount);
     ~AdjacencyMatrix() override;
 
     bool getAdjacency(int v1, int v2) override;
@@ -55,7 +56,7 @@ protected:
 
   class AdjacencyList : public Representation{
   public:
-    explicit AdjacencyList(ifstream &file);
+    explicit AdjacencyList(unsigned int vertexCount);
     ~AdjacencyList() override;
 
     bool getAdjacency(int v1, int v2) override;

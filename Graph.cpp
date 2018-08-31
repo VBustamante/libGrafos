@@ -7,22 +7,46 @@
 #include "GetTimeMs64.h"
 
 Graph::Graph(const std::string fileName, Graph::RepresentationType representationType) {
-  ifstream input(fileName);
   this->representationType = representationType;
+
+  auto start = GetTimeMs64();
+  ifstream input(fileName);
+  unsigned int vCount = 0;
+  if(!(input >> vCount) || vCount < 1){
+    input.close();
+    throw "File doesn't start with the vertex count (or it is less than 1)";
+  }
 
   string rString;
   switch (representationType){
     case Graph::RepresentationType::ADJ_MATRIX:
       rString = "Matrix";
-      representation = new Graph::AdjacencyMatrix(input);
+      representation = new Graph::AdjacencyMatrix(vCount);
       break;
     case Graph::RepresentationType::ADJ_LIST:
       rString = "List";
-      representation = new Graph::AdjacencyList(input);
+      representation = new Graph::AdjacencyList(vCount);
       break;
   }
 
-  cout << "Creating " << rString << " from " << fileName << endl;
+  int a, b;
+  input >> a;
+  unsigned int lineCount = 1;
+  unsigned int edgeCount = 0;
+
+  while(input >> a >> b){
+    lineCount++;
+    if(a < 1 || a > vCount || b < 1 || b > vCount ){
+      cout << "Bad edge at line "<<lineCount<<". Skipping."<<endl;
+    }
+    representation->addAdjacency(a, b);
+    representation->addAdjacency(b, a);
+    edgeCount++;
+  }
+
+  representation->setEdgeCount(edgeCount);
+
+  cout << "Created " << rString << " from " << fileName << " ("<< (GetTimeMs64() - start) << "ms)"<< endl;
 
   input.close();
 }
@@ -62,7 +86,6 @@ void Graph::REPL() {
 }
 
 void Graph::dump() {
-  cout << "Dumping" << endl;
   auto start = GetTimeMs64();
   cout << "Vertex Count " << representation->getVertexCount() << endl;
   cout << "Edge Count " << representation->getEdgeCount() << endl;
@@ -85,14 +108,13 @@ void Graph::dump() {
   int avgDegree = (representation->getEdgeCount()*2)/representation->getVertexCount();
   cout << "Avg Degree " << avgDegree << endl;
 
-  cout << "Dumped  (" << (GetTimeMs64() - start) << "ms)" << endl;
+  cout << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
 }
 
 // Internal Classes
-
 // Matrix
-Graph::AdjacencyMatrix::AdjacencyMatrix(ifstream &file) {
-  file >> vertexCount;
+Graph::AdjacencyMatrix::AdjacencyMatrix(unsigned int vertexCount) {
+  this->vertexCount = vertexCount;
 
   // We store the matrix on a flat array to optimize memory access.
   // Matrices imply more mallocs which imply heap fragmentation.
@@ -100,12 +122,6 @@ Graph::AdjacencyMatrix::AdjacencyMatrix(ifstream &file) {
 
   for (int i=0; i<vertexCount * vertexCount; i++) adjacencies[i] = false;
 
-  int a, b;
-  while(file >> a >> b){
-    addAdjacency(a, b);
-    addAdjacency(b, a);
-    edgeCount++;
-  }
 }
 
 Graph::AdjacencyMatrix::~AdjacencyMatrix() {
@@ -143,19 +159,11 @@ void Graph::AdjacencyMatrix::getNeighbours(int vertex, list<int> &neighbours) {
 
 
 // List
-Graph::AdjacencyList::AdjacencyList(ifstream &file) {
-  file >> vertexCount;
-
+Graph::AdjacencyList::AdjacencyList(unsigned int vertexCount) {
+  this->vertexCount = vertexCount;
   adjacencies = new list<int> *[vertexCount];
 
   for (int i=0; i<vertexCount; i++) adjacencies[i] = new list<int>;
-
-  int a, b;
-  while(file >> a >> b){
-    addAdjacency(a, b);
-    addAdjacency(b, a);
-    edgeCount++;
-  }
 }
 
 Graph::AdjacencyList::~AdjacencyList() {
@@ -195,4 +203,3 @@ void Graph::AdjacencyList::getNeighbours(int vertex, list<int> &neighbours) {
     neighbours.push_front(n);
   }
 }
-
