@@ -93,25 +93,47 @@ void Graph::dump() {
   vector<int> degrees(representation->getVertexCount());
   int maxDegree=0, minDegree=representation->getVertexCount();
 
+  int a = 0, b = 0, c = 0;
   for(int i=1; i<=representation->getVertexCount(); i++){
     int d = representation->getDegree(i);
     if(d>maxDegree) maxDegree = d;
     if(d<minDegree) minDegree = d;
     degrees[i-1] = d;
+//    a += d ==0?1:0;
+//    b += d ==1?1:0;
+//    c += d ==2?1:0;
   }
 
   sort(degrees.begin(), degrees.end());
 
+//  cout <<"0="<<a<<endl;
+//  cout <<"1="<<b<<endl;
+//  cout <<"2="<<c<< endl;
   cout << "Min Degree " << minDegree << endl;
   cout << "Max Degree " << maxDegree << endl;
 
   int avgDegree = (representation->getEdgeCount()*2)/representation->getVertexCount();
   cout << "Avg Degree " << avgDegree << endl;
 
+  int midDegree;
+  if(representation->getVertexCount()%2){ //ODD
+    midDegree = degrees[(representation->getVertexCount()/2) + 1];
+  }else{ //EVEN
+    int i = representation->getVertexCount()/2;
+    midDegree = (degrees[i] + degrees[i+1])/2;
+  }
+
+  cout << "Med Degree " << midDegree << endl;
+
+
   cout << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
 }
 
 // Internal Classes
+void Graph::Representation::getConnectedComponents(list<list<int>> &connectedComponents) {
+
+}
+
 // Matrix
 Graph::AdjacencyMatrix::AdjacencyMatrix(unsigned int vertexCount) {
   this->vertexCount = vertexCount;

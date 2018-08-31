@@ -30,7 +30,7 @@ protected:
     unsigned int getVertexCount(){return this->vertexCount;};
     unsigned int setEdgeCount(unsigned int edgeCount){this->edgeCount = edgeCount;};
     unsigned int getEdgeCount(){return this->edgeCount;};
-
+    void getConnectedComponents(list <list<int>> &connectedComponents);
     virtual ~Representation() = default;;
 
   protected:
