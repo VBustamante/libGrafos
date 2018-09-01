@@ -30,13 +30,15 @@ protected:
     unsigned int getVertexCount(){return this->vertexCount;};
     unsigned int setEdgeCount(unsigned int edgeCount){this->edgeCount = edgeCount;};
     unsigned int getEdgeCount(){return this->edgeCount;};
-    void getConnectedComponents(list <list<int>> &connectedComponents);
+    virtual void getConnectedComponents(list < list<int> *> &connectedComponents);
     virtual ~Representation() = default;;
 
   protected:
     Representation() = default; //protected constructor makes the class abstract
     unsigned int vertexCount=0;
     unsigned int edgeCount=0;
+
+    void doDfs(int vertex, bool *visited, list<int> *vertexList);
   };
 
   class AdjacencyMatrix : public Representation{

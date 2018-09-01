@@ -124,17 +124,39 @@ void Graph::dump() {
 
   cout << "Med Degree " << midDegree << endl;
 
-  list<list<int>> cc;
+  list<list<int>*> cc;
   representation->getConnectedComponents(cc);
 
   cout << "Connected Components: " << cc.size() << endl;
+
+  for(auto component: cc) delete component;
 
   cout << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
 }
 
 // Internal Classes
-void Graph::Representation::getConnectedComponents(list<list<int>> &connectedComponents) {
-  vector<bool> vStatuses(32385);
+void Graph::Representation::getConnectedComponents(list<list<int>*> &connectedComponents) {
+  auto *visited = new bool[getVertexCount()];
+
+  for(int i = 0; i<getVertexCount(); i++) visited[i] = false;
+
+  for(int i = 1; i<=getVertexCount(); i++){
+    if(!visited[i-1]){
+      auto *l = new list<int>;
+      connectedComponents.push_front(l);
+      doDfs(i, visited, l);
+    }
+  }
+}
+
+void Graph::Representation::doDfs(int vertex, bool *visited, list<int> *vertexList) {
+  visited[vertex - 1] = true;
+  vertexList->push_front(vertex);
+  list<int> ns;
+  getNeighbours(vertex, ns);
+  for(auto n: ns){
+    if(!visited[n-1]) doDfs(n, visited, vertexList);
+  }
 
 }
 
@@ -204,7 +226,7 @@ bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
   bool found = false;
 
   for (int &v1Neighbour : *v1Neighbours) {
-    if(v1Neighbour == v2 - 1){
+    if(v1Neighbour == v2){
       found = true;
       break;
     }
@@ -215,7 +237,7 @@ bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
 
 void Graph::AdjacencyList::addAdjacency(int v1, int v2) {
   list<int> *v1Neighbours = adjacencies[v1 - 1];
-  v1Neighbours->push_front(v2 - 1);
+  v1Neighbours->push_front(v2);
 }
 
 unsigned int Graph::AdjacencyList::getDegree(int vertex) {
