@@ -7,10 +7,10 @@ using namespace std;
 
 int main() {
   cout << "Startup!" << endl;
-  Graph *g = new Graph("graphs/as_graph.txt", Graph::RepresentationType::ADJ_LIST);
+  Graph *g;
+  g = new Graph("graphs/as_graph.txt", Graph::RepresentationType::ADJ_LIST);
   g->dump();
   g->REPL();
-  cout << "Cleanup!" << endl;
   delete g;
   return 0;
 }

@@ -3,6 +3,7 @@
 //
 #include <vector>
 #include <algorithm>
+#include <stack>
 #include "Graph.h"
 #include "GetTimeMs64.h"
 
@@ -32,16 +33,24 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
   int a, b;
   unsigned int lineCount = 1;
   unsigned int edgeCount = 0;
+#define LIBGRAPH_BADLINE_THRESHOLD 10
+  unsigned badLines = 0;
+
 
   while(input >> a >> b){
     lineCount++;
     if(a < 1 || a > vCount || b < 1 || b > vCount ){
-      cout << "Bad edge at line "<<lineCount<<". Skipping."<<endl;
+      badLines++;
+      if(badLines < LIBGRAPH_BADLINE_THRESHOLD) cout << "Bad edge at line "<<lineCount<<". Skipping."<<endl;
+      if(badLines == LIBGRAPH_BADLINE_THRESHOLD) cout << "More than "<<LIBGRAPH_BADLINE_THRESHOLD<<" bad lines. Will stop reporting but keep skipping."<<endl;
+      continue;
     }
     representation->addAdjacency(a, b);
     representation->addAdjacency(b, a);
     edgeCount++;
   }
+
+  if(badLines >= LIBGRAPH_BADLINE_THRESHOLD) cout << "Skipped "<<lineCount<<" bad edges."<<endl;
 
   representation->setEdgeCount(edgeCount);
 
@@ -51,7 +60,6 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
 }
 
 Graph::~Graph() {
-  cout << "~Graph"<<endl;
   delete representation;
 }
 
@@ -149,15 +157,30 @@ void Graph::Representation::getConnectedComponents(list<list<int>*> &connectedCo
   }
 }
 
-void Graph::Representation::doDfs(int vertex, bool *visited, list<int> *vertexList) {
-  visited[vertex - 1] = true;
-  vertexList->push_front(vertex);
-  list<int> ns;
-  getNeighbours(vertex, ns);
-  for(auto n: ns){
-    if(!visited[n-1]) doDfs(n, visited, vertexList);
+void Graph::Representation::doDfs(int root, bool *visited, list<int> *vertexList) {
+  stack<int> s;
+  s.push(root);
+
+  while(!s.empty()){
+    int v = s.top();
+    s.pop();
+    if(!visited[v-1]){
+      visited[v - 1] = true;
+      vertexList->push_front(v);
+
+      list<int> neighbours;
+      getNeighbours(v, neighbours);
+
+      for(auto n: neighbours) s.push(n);
+    }
   }
 
+}
+
+bool Graph::Representation::isValidVertex(int v) {
+  bool c = (v>0 && v<= vertexCount);
+  if(!c) cout << "Invalid vertex request "<<v<<endl;
+  return c;
 }
 
 // Matrix
@@ -173,7 +196,6 @@ Graph::AdjacencyMatrix::AdjacencyMatrix(unsigned int vertexCount) {
 }
 
 Graph::AdjacencyMatrix::~AdjacencyMatrix() {
-  cout << "~AdjacencyMatrix"<<endl;
   delete[] adjacencies;
 }
 
@@ -184,14 +206,20 @@ int Graph::AdjacencyMatrix::calc1DIndex(int v1, int v2) {
 }
 
 bool Graph::AdjacencyMatrix::getAdjacency(int v1, int v2) {
+  if(!isValidVertex(v1) || !isValidVertex(v2)) return false;
+
   return adjacencies[calc1DIndex(v1, v2)];
 }
 
 void Graph::AdjacencyMatrix::addAdjacency(int v1, int v2) {
+  if(!isValidVertex(v1) || !isValidVertex(v2)) return;
+
   adjacencies[calc1DIndex(v1, v2)] = true;
 }
 
 unsigned int Graph::AdjacencyMatrix::getDegree(int vertex){
+  if(!isValidVertex(vertex))return 0;
+
   unsigned int degree = 0;
   for(int i =1; i<= getVertexCount(); i++){
     if(getAdjacency(vertex, i)) degree++;
@@ -200,6 +228,8 @@ unsigned int Graph::AdjacencyMatrix::getDegree(int vertex){
 }
 
 void Graph::AdjacencyMatrix::getNeighbours(int vertex, list<int> &neighbours) {
+  if(!isValidVertex(vertex))return;
+
   for(int i =1; i<= getVertexCount(); i++){
     if(getAdjacency(vertex, i)) neighbours.push_front(i);
   }
@@ -215,13 +245,14 @@ Graph::AdjacencyList::AdjacencyList(unsigned int vertexCount) {
 }
 
 Graph::AdjacencyList::~AdjacencyList() {
-  cout << "~AdjacencyList"<<endl;
   for (int i=0; i<vertexCount; i++) delete adjacencies[i];
   delete[] adjacencies;
 }
 
 
 bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
+  if(!isValidVertex(v1) || !isValidVertex(v2)) return false;
+
   list<int> *v1Neighbours = adjacencies[v1 - 1];
   bool found = false;
 
@@ -236,15 +267,17 @@ bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
 }
 
 void Graph::AdjacencyList::addAdjacency(int v1, int v2) {
+  if(!isValidVertex(v1) || !isValidVertex(v2)) return;
   list<int> *v1Neighbours = adjacencies[v1 - 1];
   v1Neighbours->push_front(v2);
 }
 
 unsigned int Graph::AdjacencyList::getDegree(int vertex) {
-  return adjacencies[vertex - 1]->size();
+  return isValidVertex(vertex)?adjacencies[vertex - 1]->size():0;
 }
 
 void Graph::AdjacencyList::getNeighbours(int vertex, list<int> &neighbours) {
+  if(!isValidVertex(vertex)) return;
   list<int> *a = adjacencies[vertex - 1];
 
   for(int n: *a){

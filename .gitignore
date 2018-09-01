@@ -9,3 +9,7 @@ cmake-*
 
 **/.idea/workspace.xml
 **/.idea/tasks.xml
+
+
+graphs/*
+!graphs/as_graph.txt
