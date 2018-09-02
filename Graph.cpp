@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <stack>
+#include <iomanip>
 #include "Graph.h"
 #include "GetTimeMs64.h"
 
@@ -92,10 +93,19 @@ void Graph::REPL() {
   }while(cmd != "end");
 }
 
+#define LIBGRAPH_FILE_OUTPUT false
 void Graph::dump() {
+  #if LIBGRAPH_FILE_OUTPUT
+    ofstream file;
+    file.open("dump.txt");
+    ofstream *out = &file;
+  #else
+    ostream *out = &cout;
+  #endif
+
   auto start = GetTimeMs64();
-  cout << "Vertex Count " << representation->getVertexCount() << endl;
-  cout << "Edge Count " << representation->getEdgeCount() << endl;
+  *out << "Vertex Count " << representation->getVertexCount() << endl;
+  *out << "Edge Count " << representation->getEdgeCount() << endl;
 
   vector<int> degrees(representation->getVertexCount());
   int maxDegree=0, minDegree=representation->getVertexCount();
@@ -106,21 +116,15 @@ void Graph::dump() {
     if(d>maxDegree) maxDegree = d;
     if(d<minDegree) minDegree = d;
     degrees[i-1] = d;
-//    a += d ==0?1:0;
-//    b += d ==1?1:0;
-//    c += d ==2?1:0;
   }
 
   sort(degrees.begin(), degrees.end());
 
-//  cout <<"0="<<a<<endl;
-//  cout <<"1="<<b<<endl;
-//  cout <<"2="<<c<< endl;
-  cout << "Min Degree " << minDegree << endl;
-  cout << "Max Degree " << maxDegree << endl;
+  *out << "Min Degree " << minDegree << endl;
+  *out << "Max Degree " << maxDegree << endl;
 
   int avgDegree = (representation->getEdgeCount()*2)/representation->getVertexCount();
-  cout << "Avg Degree " << avgDegree << endl;
+  *out << "Avg Degree " << avgDegree << endl;
 
   int midDegree;
   if(representation->getVertexCount()%2){ //ODD
@@ -130,16 +134,37 @@ void Graph::dump() {
     midDegree = (degrees[i] + degrees[i+1])/2;
   }
 
-  cout << "Med Degree " << midDegree << endl;
+  *out << "Med Degree " << midDegree << endl;
 
   list<list<int>*> cc;
   representation->getConnectedComponents(cc);
 
-  cout << "Connected Components: " << cc.size() << endl;
+  cc.sort( []( list<int> *a, list<int> *b ) { return a->size() > b->size(); } );
 
-  for(auto component: cc) delete component;
+  *out << "Connected Components: " << cc.size() << endl;
 
-  cout << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
+  unsigned int cIndex = 0;
+  for(auto component: cc){
+    *out << "Component " << ++cIndex << ", size: " << component->size()<< ", vertices:";
+
+    #define LIBGRAPH_VERTS_PER_LINE 10
+
+    int vCount = 0;
+    for(auto v: *component){
+      if(vCount % LIBGRAPH_VERTS_PER_LINE == 0) *out << endl;
+      vCount += 1;
+      *out << setw(7) << left << v <<" ";
+    }
+
+    *out << endl;
+
+    delete component;
+  }
+
+  *out << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
+  #if LIBGRAPH_FILE_OUTPUT
+    out->close();
+  #endif
 }
 
 // Internal Classes
@@ -268,7 +293,7 @@ bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
 
 void Graph::AdjacencyList::addAdjacency(int v1, int v2) {
   if(!isValidVertex(v1) || !isValidVertex(v2)) return;
-  list<int> *v1Neighbours = adjacencies[v1 - 1];
+  list<int> *v1Neighbours = adjacencies[ v1 - 1];
   v1Neighbours->push_front(v2);
 }
 
