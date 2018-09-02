@@ -1,7 +1,6 @@
 //
 // Created by vbustamante on 27/08/2018.
 //
-#include <vector>
 #include <algorithm>
 #include <stack>
 #include <iomanip>
@@ -155,11 +154,11 @@ void Graph::generateSearchTree(int vertex, Graph::SearchType searchType) {
     return;
   }
 
-  auto *levels = new int[getVertexCount()];
+  vector<int> levels(getVertexCount());
 
   for(int i = 0; i< getVertexCount(); i++) levels[i] = 0;
 
-  auto addLeaf = [this, levels, out](int child, int parent){
+  auto addLeaf = [this, &levels, out](int child, int parent){
     if(parent == 0) *out << child << " " << parent << " 0" << endl;
     if(!representation->isValidVertex(child) || !representation->isValidVertex(parent)) return;
     *out << child << " " << parent << " ";
@@ -170,7 +169,7 @@ void Graph::generateSearchTree(int vertex, Graph::SearchType searchType) {
     *out << levels[child] << endl;
   };
 
-  auto *visited = new bool[getVertexCount()];
+  vector<bool> visited(getVertexCount());
 
   switch(searchType){
     case SearchType::BFS:
@@ -180,24 +179,39 @@ void Graph::generateSearchTree(int vertex, Graph::SearchType searchType) {
       representation->doDfs(vertex, visited, addLeaf);
       break;
   }
-
-  delete levels;
-  #if LIBGRAPH_FILE_OUTPUT
+ #if LIBGRAPH_FILE_OUTPUT
     out->close();
   #endif
 
 }
 
+int Graph::doSearch(int root, int target, SearchType type){
+  int tParent = -1;
+  auto checkResult = [target, &tParent](int child, int parent){
+    if(child == target) tParent = parent;
+  };
 
+  vector<bool> visited(getVertexCount());
+
+  switch(type){
+    case SearchType::BFS:
+      representation->doBfs(root, visited, checkResult);
+      break;
+    case SearchType::DFS:
+      representation->doDfs(root, visited, checkResult);
+      break;
+  }
+
+  return tParent;
+};
 
 // Internal Classes
-
 bool Graph::Representation::isValidVertex(int v) {
   bool c = (v>0 && v<= vertexCount);
   return c;
 }
 
-void Graph::Representation::doDfs(int root, bool *visited, function<void (int child, int parent)> hook) {
+void Graph::Representation::doDfs(int root, vector<bool> &visited, function<void (int child, int parent)> hook) {
   stack<pair<int, int>> s;
   s.push(pair<int,int>(root, 0));
 
@@ -216,7 +230,7 @@ void Graph::Representation::doDfs(int root, bool *visited, function<void (int ch
   }
 }
 
-void Graph::Representation::doBfs(int root, bool *visited, function<void (int child, int parent)> hook) {
+void Graph::Representation::doBfs(int root, vector<bool> &visited, function<void (int child, int parent)> hook) {
   queue<int> s;
   s.push(root);
   visited[root-1] = true;
@@ -240,7 +254,7 @@ void Graph::Representation::doBfs(int root, bool *visited, function<void (int ch
 }
 
 void Graph::Representation::getConnectedComponents(list<list<int>*> &connectedComponents) {
-  auto *visited = new bool[getVertexCount()];
+  vector<bool> visited(getVertexCount());
 
   for(int i = 0; i<getVertexCount(); i++) visited[i] = false;
 
@@ -259,14 +273,13 @@ Graph::AdjacencyMatrix::AdjacencyMatrix(unsigned int vertexCount) {
 
   // We store the matrix on a flat array to optimize memory access.
   // Matrices imply more mallocs which imply heap fragmentation.
-  adjacencies = new bool[vertexCount * vertexCount];
+  adjacencies.reserve(vertexCount * vertexCount);
 
   for (int i=0; i<vertexCount * vertexCount; i++) adjacencies[i] = false;
 
 }
 
 Graph::AdjacencyMatrix::~AdjacencyMatrix() {
-  delete[] adjacencies;
 }
 
 // We need this to access our flat matrix

@@ -10,6 +10,7 @@
 #include <fstream>
 #include <list>
 #include <functional>
+#include <vector>
 
 using namespace std;
 
@@ -23,6 +24,7 @@ public:
   bool getAdjacency(int v1, int v2){representation->getAdjacency(v1, v2);};
   virtual unsigned int getDegree(int vertex){ return representation->getDegree(vertex);};
   void generateSearchTree(int vertex, SearchType searchType);
+  int doSearch(int root, int target, SearchType type);
 
   void dump();
   ~Graph();
@@ -38,8 +40,8 @@ protected:
     unsigned int setEdgeCount(unsigned int edgeCount){this->edgeCount = edgeCount;};
     unsigned int getEdgeCount(){return this->edgeCount;};
     bool isValidVertex(int v);
-    void doDfs(int root, bool *visited, function<void (int, int)> hook);
-    void doBfs(int root, bool *visited, function<void(int, int)> hook);
+    void doDfs(int root, vector<bool> &visited, function<void (int, int)> hook);
+    void doBfs(int root, vector<bool> &visited, function<void(int, int)> hook);
     void getConnectedComponents(list < list<int> *> &connectedComponents);
     virtual ~Representation() = default;;
 
@@ -61,7 +63,7 @@ protected:
 
   private:
     int calc1DIndex(int v1, int v2);
-    bool *adjacencies;
+    vector<bool> adjacencies;
   };
 
   class AdjacencyList : public Representation{
