@@ -37,6 +37,18 @@ int main() {
       if((cin >> v1)){
         cout << "Degree "<<v1<< " = " << g->getDegree(v1);
       }else cout << "Attr error";
+    }
+    else if(cmd == "bfs") {
+      int v1;
+      if((cin >> v1)){
+        g->generateSearchTree(v1, Graph::SearchType::BFS);
+      }else cout << "Attr error";
+    }
+    else if(cmd == "dfs") {
+      int v1;
+      if((cin >> v1)){
+        g->generateSearchTree(v1, Graph::SearchType::DFS);
+      }else cout << "Attr error";
     }else{
       cout << "Unknown command";
     }

@@ -133,17 +133,67 @@ void Graph::dump() {
     delete component;
   }
 
+
+
   *out << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
   #if LIBGRAPH_FILE_OUTPUT
     out->close();
   #endif
 }
 
+void Graph::generateSearchTree(int vertex, Graph::SearchType searchType) {
+  #if LIBGRAPH_FILE_OUTPUT
+    ofstream file;
+      file.open("searchTree.txt");
+      ofstream *out = &file;
+  #else
+    ostream *out = &cout;
+  #endif
+
+  if(!representation->isValidVertex(vertex)){
+    *out<<"Invalid Vertex"<<endl;
+    return;
+  }
+
+  auto *levels = new int[getVertexCount()];
+
+  for(int i = 0; i< getVertexCount(); i++) levels[i] = 0;
+
+  auto addLeaf = [this, levels, out](int child, int parent){
+    if(parent == 0) *out << child << " " << parent << " 0" << endl;
+    if(!representation->isValidVertex(child) || !representation->isValidVertex(parent)) return;
+    *out << child << " " << parent << " ";
+    parent -= 1; child -= 1;
+
+    levels[child] = levels[parent] + 1;
+
+    *out << levels[child] << endl;
+  };
+
+  auto *visited = new bool[getVertexCount()];
+
+  switch(searchType){
+    case SearchType::BFS:
+      representation->doBfs(vertex, visited, addLeaf);
+      break;
+    case SearchType::DFS:
+      representation->doDfs(vertex, visited, addLeaf);
+      break;
+  }
+
+  delete levels;
+  #if LIBGRAPH_FILE_OUTPUT
+    out->close();
+  #endif
+
+}
+
+
+
 // Internal Classes
 
 bool Graph::Representation::isValidVertex(int v) {
   bool c = (v>0 && v<= vertexCount);
-  if(!c) cout << "Invalid vertex request "<<v<<endl;
   return c;
 }
 
@@ -169,6 +219,7 @@ void Graph::Representation::doDfs(int root, bool *visited, function<void (int ch
 void Graph::Representation::doBfs(int root, bool *visited, function<void (int child, int parent)> hook) {
   queue<int> s;
   s.push(root);
+  visited[root-1] = true;
   hook(root, 0);
 
   while(!s.empty()){
