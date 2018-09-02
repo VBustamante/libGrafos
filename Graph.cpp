@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stack>
 #include <iomanip>
+#include <queue>
 #include "Graph.h"
 #include "GetTimeMs64.h"
 
@@ -62,35 +63,6 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
 
 Graph::~Graph() {
   delete representation;
-}
-
-void Graph::REPL() {
-  string cmd;
-  do{
-    cout<< "LibGraph REPL >>";
-    cin >> cmd;
-
-    auto start = GetTimeMs64();
-    if(cmd == "end") break;
-    else if(cmd == "edg") {
-      int v1, v2;
-      if((cin >> v1) && (cin >> v2)){
-        cout << "Edge "<<v1<<"<->"<<v2<< " = " << representation->getAdjacency(v1, v2);
-      }else cout << "Attr error";
-    }
-    else if(cmd == "deg") {
-      int v1;
-      if((cin >> v1)){
-        cout << "Degree "<<v1<< " = " << representation->getDegree(v1);
-      }else cout << "Attr error";
-    }else{
-      cout << "Unknown command";
-    }
-
-    cout<<" (" << (GetTimeMs64() - start) << "ms)" << endl;
-    cin.clear();
-    fflush(stdin);
-  }while(cmd != "end");
 }
 
 #define LIBGRAPH_FILE_OUTPUT false
@@ -168,6 +140,54 @@ void Graph::dump() {
 }
 
 // Internal Classes
+
+bool Graph::Representation::isValidVertex(int v) {
+  bool c = (v>0 && v<= vertexCount);
+  if(!c) cout << "Invalid vertex request "<<v<<endl;
+  return c;
+}
+
+void Graph::Representation::doDfs(int root, bool *visited, function<void (int child, int parent)> hook) {
+  stack<pair<int, int>> s;
+  s.push(pair<int,int>(root, 0));
+
+  while(!s.empty()){
+    pair<int, int> v = s.top();
+    s.pop();
+    if(!visited[v.first-1]){
+      visited[v.first - 1] = true;
+      hook(v.first , v.second);
+
+      list<int> neighbours;
+      getNeighbours(v.first, neighbours);
+
+      for(auto n: neighbours) s.push(pair<int, int>(n, v.first));
+    }
+  }
+}
+
+void Graph::Representation::doBfs(int root, bool *visited, function<void (int child, int parent)> hook) {
+  queue<int> s;
+  s.push(root);
+  hook(root, 0);
+
+  while(!s.empty()){
+    int v = s.front();
+    s.pop();
+
+    list<int> neighbours;
+    getNeighbours(v, neighbours);
+
+    for(auto n: neighbours){
+      if(!visited[n-1]){
+        visited[n-1] = true;
+        s.push(n);
+        hook(n, v);
+      }
+    }
+  }
+}
+
 void Graph::Representation::getConnectedComponents(list<list<int>*> &connectedComponents) {
   auto *visited = new bool[getVertexCount()];
 
@@ -177,35 +197,9 @@ void Graph::Representation::getConnectedComponents(list<list<int>*> &connectedCo
     if(!visited[i-1]){
       auto *l = new list<int>;
       connectedComponents.push_front(l);
-      doDfs(i, visited, l);
+      doDfs(i, visited, [l](int c, int p){l->push_front(c);});
     }
   }
-}
-
-void Graph::Representation::doDfs(int root, bool *visited, list<int> *vertexList) {
-  stack<int> s;
-  s.push(root);
-
-  while(!s.empty()){
-    int v = s.top();
-    s.pop();
-    if(!visited[v-1]){
-      visited[v - 1] = true;
-      vertexList->push_front(v);
-
-      list<int> neighbours;
-      getNeighbours(v, neighbours);
-
-      for(auto n: neighbours) s.push(n);
-    }
-  }
-
-}
-
-bool Graph::Representation::isValidVertex(int v) {
-  bool c = (v>0 && v<= vertexCount);
-  if(!c) cout << "Invalid vertex request "<<v<<endl;
-  return c;
 }
 
 // Matrix

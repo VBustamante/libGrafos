@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <functional>
 
 using namespace std;
 
@@ -16,8 +17,12 @@ class Graph {
 public:
   enum class RepresentationType { ADJ_MATRIX, ADJ_LIST};
   Graph(std::string fileName, RepresentationType representationType);
+  unsigned int getVertexCount(){return representation->getVertexCount();};
+  unsigned int getEdgeCount(){return representation->getEdgeCount();};
+  bool getAdjacency(int v1, int v2){representation->getAdjacency(v1, v2);};
+  virtual unsigned int getDegree(int vertex){ return representation->getDegree(vertex);};
+
   void dump();
-  void REPL();
   ~Graph();
 protected:
   // Internal Classes
@@ -31,6 +36,8 @@ protected:
     unsigned int setEdgeCount(unsigned int edgeCount){this->edgeCount = edgeCount;};
     unsigned int getEdgeCount(){return this->edgeCount;};
     bool isValidVertex(int v);
+    void doDfs(int root, bool *visited, function<void (int, int)> hook);
+    void doBfs(int root, bool *visited, function<void(int, int)> hook);
     void getConnectedComponents(list < list<int> *> &connectedComponents);
     virtual ~Representation() = default;;
 
@@ -38,8 +45,6 @@ protected:
     Representation() = default; //protected constructor makes the class abstract
     unsigned int vertexCount=0;
     unsigned int edgeCount=0;
-
-    void doDfs(int root, bool *visited, list<int> *vertexList);
   };
 
   class AdjacencyMatrix : public Representation{
