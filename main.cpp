@@ -18,11 +18,18 @@ int main() {
   }
 
 //  auto searchStart = GetTimeMs64();
-//  for(int i = 1; i <= 1000; i++){
-//    if(i%50 == 0) cout<<i<<endl;
-//    g->doSearch((i%g->getVertexCount())+1, ((i+1)%g->getVertexCount())+1, Graph::SearchType::BFS);
+//  const int loops = 10;
+//  for(int i = 1; i <= loops; i++){
+//      cout<<i<<" ";
+//    g->doSearch((i%g->getVertexCount())+1, ((i+1)%g->getVertexCount())+1, Graph::SearchType::DFS);
 //  }
-//  cout << "1000 searches in "<<GetTimeMs64() - searchStart << "ms" << endl;
+//  cout << endl << loops << " searches in "<<GetTimeMs64() - searchStart << "ms" << endl;
+
+  auto searchStart = GetTimeMs64();
+
+  cout << "Diameter: " << g->getDiameter() << " ("<<GetTimeMs64() - searchStart << "ms)"<< endl;
+
+
   // REPL
   string cmd;
   do{

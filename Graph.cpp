@@ -205,6 +205,35 @@ int Graph::doSearch(int root, int target, SearchType type){
   return tParent;
 };
 
+int Graph::getDiameter(){
+
+  int maxLevel = 0;
+  pair<int, int> estrangedPair;
+  vector<int> levels(getVertexCount());
+  vector<bool> visited(getVertexCount());
+
+  for(int root = 1; root <= getVertexCount(); root++){
+    for(int j = 0; j< getVertexCount(); j++) levels[j] = 0;
+    for(int j = 0; j< getVertexCount(); j++) visited[j] = false;
+
+    auto getLevel = [this, root, &levels, &maxLevel, &estrangedPair](int child, int parent){
+      if(!representation->isValidVertex(child) || !representation->isValidVertex(parent)) return;
+      int lvl = levels[parent-1] + 1;
+      levels[child-1] = lvl;
+      if(lvl>maxLevel){
+        maxLevel = lvl;
+        estrangedPair.first = root;
+        estrangedPair.second = child;
+      }
+    };
+
+    representation->doBfs(root, visited, getLevel);
+    if(root == 1) for(int j = 0;j<getVertexCount();j++) if(!visited[j]) return -1;
+
+  }
+  cout << "from "<<estrangedPair.first<<" to "<<estrangedPair.second<<endl;
+  return maxLevel;
+};
 // Internal Classes
 bool Graph::Representation::isValidVertex(int v) {
   bool c = (v>0 && v<= vertexCount);

@@ -25,6 +25,7 @@ public:
   virtual unsigned int getDegree(int vertex){ return representation->getDegree(vertex);};
   void generateSearchTree(int vertex, SearchType searchType);
   int doSearch(int root, int target, SearchType type);
+  int getDiameter();
 
   void dump();
   ~Graph();
@@ -83,6 +84,7 @@ protected:
   // Data itself
   RepresentationType  representationType;
   Representation *representation;
+
 };
 
 #endif //LIBGRAFOS_GRAPH_H
