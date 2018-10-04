@@ -2,6 +2,7 @@
 
 #include "Graph.h"
 #include "GetTimeMs64.h"
+#include "tinyfiledialogs.h"
 
 using namespace std;
 
@@ -9,7 +10,11 @@ int main() {
   cout << "Startup!" << endl;
   Graph *g;
   try {
-    g = new Graph("graphs/as_graph.txt", Graph::RepresentationType::ADJ_LIST);
+
+    char const * fileFilterPatterns[] = { "*.txt"};
+
+    const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
+    g = new Graph(filename, Graph::RepresentationType::ADJ_LIST);
 //    g->dump();
   }catch (const char* msg){
     cout << msg<<endl;
@@ -27,8 +32,7 @@ int main() {
 
   auto searchStart = GetTimeMs64();
 
-  cout << "Diameter: " << g->getDiameter() << " ("<<GetTimeMs64() - searchStart << "ms)"<< endl;
-
+//  cout << "Diameter: " << g->getDiameter() << " ("<<GetTimeMs64() - searchStart << "ms)"<< endl;
 
   // REPL
   string cmd;
