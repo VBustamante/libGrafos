@@ -29,16 +29,23 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
       rString = "List";
       representation = new Graph::AdjacencyList(vCount);
       break;
+
+    case Graph::RepresentationType::WEIGHTED_ADJ_LIST:
+      rString = "Weighted List";
+      representation = new Graph::WeightedAdjacencyList(vCount);
+      break;
   }
 
   int a, b;
+  float w = 1;
   unsigned int lineCount = 1;
   unsigned int edgeCount = 0;
 #define LIBGRAPH_BADLINE_THRESHOLD 10
   unsigned badLines = 0;
 
 
-  while(input >> a >> b){
+  //a and b are vertices, w is the edge's weight. only works with weighted graphs
+  while(input >> a >> b >> w){
     lineCount++;
     if(a < 1 || a > vCount || b < 1 || b > vCount ){
       badLines++;
@@ -46,8 +53,9 @@ Graph::Graph(const std::string fileName, Graph::RepresentationType representatio
       if(badLines == LIBGRAPH_BADLINE_THRESHOLD) cout << "More than "<<LIBGRAPH_BADLINE_THRESHOLD<<" bad lines. Will stop reporting but keep skipping."<<endl;
       continue;
     }
-    representation->addAdjacency(a, b);
-    representation->addAdjacency(b, a);
+    representation->addAdjacency(a, b, w);
+    representation->addAdjacency(b, a, w);
+
     edgeCount++;
   }
 
@@ -131,8 +139,8 @@ void Graph::dump() {
 
     delete component;
   }
-
-
+  cout << "a" << endl;
+  representation->doDijkstra(1);
 
   *out << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
   #if LIBGRAPH_FILE_OUTPUT
@@ -323,7 +331,7 @@ bool Graph::AdjacencyMatrix::getAdjacency(int v1, int v2) {
   return adjacencies[calc1DIndex(v1, v2)];
 }
 
-void Graph::AdjacencyMatrix::addAdjacency(int v1, int v2) {
+void Graph::AdjacencyMatrix::addAdjacency(int v1, int v2, float w) {
   if(!isValidVertex(v1) || !isValidVertex(v2)) return;
 
   adjacencies[calc1DIndex(v1, v2)] = true;
@@ -378,7 +386,7 @@ bool Graph::AdjacencyList::getAdjacency(int v1, int v2) {
   return found;
 }
 
-void Graph::AdjacencyList::addAdjacency(int v1, int v2) {
+void Graph::AdjacencyList::addAdjacency(int v1, int v2, float w) {
   if(!isValidVertex(v1) || !isValidVertex(v2)) return;
   list<int> *v1Neighbours = adjacencies[ v1 - 1];
   v1Neighbours->push_front(v2);
@@ -389,10 +397,117 @@ unsigned int Graph::AdjacencyList::getDegree(int vertex) {
 }
 
 void Graph::AdjacencyList::getNeighbours(int vertex, list<int> &neighbours) {
-  if(!isValidVertex(vertex)) return;
-  list<int> *a = adjacencies[vertex - 1];
+    if (!isValidVertex(vertex)) return;
+    list<int> *a = adjacencies[vertex - 1];
 
-  for(int n: *a){
+    for (int n: *a) {
+        neighbours.push_front(n);
+    }
+}
+
+
+// Weighted List
+Graph::WeightedAdjacencyList::WeightedAdjacencyList(unsigned int vertexCount) {
+    this->vertexCount = vertexCount;
+    adjacencies = new list<pair<int,float>> *[vertexCount];
+
+    for (int i=0; i<vertexCount; i++) adjacencies[i] = new list<pair<int,float>>;
+}
+
+Graph::WeightedAdjacencyList::~WeightedAdjacencyList() {
+    for (int i=0; i<vertexCount; i++) delete adjacencies[i];
+    delete[] adjacencies;
+}
+
+bool Graph::WeightedAdjacencyList::getAdjacency(int v1, int v2) {
+    if(!isValidVertex(v1) || !isValidVertex(v2)) return false;
+
+    list<pair<int,float>> *v1Neighbours = adjacencies[v1 - 1];
+    bool found = false;
+
+    for (pair<int,float> &v1Neighbour : *v1Neighbours) {
+        if(v1Neighbour.first == v2){
+            found = true;
+            break;
+        }
+    }
+
+    return found;
+}
+
+float Graph::WeightedAdjacencyList::getAdjacencyWeight(int v1, int v2) {
+    if(!isValidVertex(v1) || !isValidVertex(v2)) return false;
+
+    list<pair<int,float>> *v1Neighbours = adjacencies[v1 - 1];
+    int found = 0;
+
+    for (pair<int,float> &v1Neighbour : *v1Neighbours) {
+        if(v1Neighbour.first == v2){
+            found = v1Neighbour.second;
+            break;
+        }
+    }
+
+    return found;
+}
+
+void Graph::WeightedAdjacencyList::addAdjacency(int v1, int v2, float w) {
+    if(!isValidVertex(v1) || !isValidVertex(v2)) return;
+    list<pair<int,float>> *v1Neighbours = adjacencies[ v1 - 1];
+    v1Neighbours->push_front(make_pair(v2, w));
+}
+
+unsigned int Graph::WeightedAdjacencyList::getDegree(int vertex) {
+    return isValidVertex(vertex)?adjacencies[vertex - 1]->size():0;
+}
+
+void Graph::WeightedAdjacencyList::getNeighbours(int vertex, list<int> &neighbours) {
+    if (!isValidVertex(vertex)) return;
+    list<pair<int,float>> *a = adjacencies[vertex - 1];
+
+    for (pair<int,float> n: *a) {
+        neighbours.push_front(n.first);
+    }
+}
+
+void Graph::WeightedAdjacencyList::getWeightedNeighbours(int vertex, list<pair<int,float>> &neighbours) {
+  if (!isValidVertex(vertex)) return;
+  list<pair<int,float>> *a = adjacencies[vertex - 1];
+
+  for (pair<int,float> n: *a) {
     neighbours.push_front(n);
   }
 }
+
+void Graph::WeightedAdjacencyList::doDijkstra(int v){
+  priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> distHeap;
+  float distList[vertexCount];
+  cout << "b" << endl;
+
+  for(int i=0; i < vertexCount; i++){
+    distList[i] = 2147483647;
+  }
+  distList[v-1] = 0;
+  distHeap.push(make_pair(0, v));
+
+  while(!distHeap.empty()){
+    int u = distHeap.top().second;
+    distHeap.pop();
+
+    list<pair<int,float>> *neighbours = adjacencies[u-1];
+//    getWeightedNeighbours(u, neighbours);
+    for(pair<int,float> w: *neighbours){
+      //w.first is the vertex, w.second is the weight from u to w
+      if(distList[w.first-1] > distList[u-1] + w.second) {
+        distList[w.first - 1] = distList[u - 1] + w.second;
+        distHeap.push(make_pair(distList[w.first - 1], w.first));
+      }
+    }
+  }
+
+  cout<< "distance from " << v << "to" << endl;
+  for(int i=0; i<vertexCount; i++)
+    cout<< i+1 << " - " << distList[i] << endl;
+}
+
+

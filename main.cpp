@@ -10,12 +10,11 @@ int main() {
   cout << "Startup!" << endl;
   Graph *g;
   try {
+    //char const * fileFilterPatterns[] = { "*.txt"};
+    //const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
 
-    char const * fileFilterPatterns[] = { "*.txt"};
-
-    const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
-    g = new Graph(filename, Graph::RepresentationType::ADJ_LIST);
-//    g->dump();
+    g = new Graph("graphs/pesos.txt", Graph::RepresentationType::WEIGHTED_ADJ_LIST);
+    g->dump();
   }catch (const char* msg){
     cout << msg<<endl;
     cout << "Halting" <<endl;
