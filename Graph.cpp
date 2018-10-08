@@ -243,7 +243,7 @@ int Graph::getDiameter(){
   return maxLevel;
 };
 
-void Graph::generateMinimunSpanningTree(int v) {
+int Graph::generateMinimumSpanningTree(int v) {
   #if LIBGRAPH_FILE_OUTPUT
     ofstream file;
         file.open("minimumSpanningTree.txt");
@@ -254,13 +254,13 @@ void Graph::generateMinimunSpanningTree(int v) {
 
    int *daddy;
    float *weightList;
+   float totalWeight = 0;
 
    if(!representation->isValidVertex(v)){
-     *out << "invalid starting point vertex" << endl;
       #if LIBGRAPH_FILE_OUTPUT
            out->close();
       #endif
-     return;
+     return -1;
    }
 
    representation->doPrim(v, weightList, daddy);
@@ -270,14 +270,16 @@ void Graph::generateMinimunSpanningTree(int v) {
      if(i+1 != daddy[i]){
        *out << i+1 << " " << daddy[i] << " " << weightList[i] << endl;
      }
+     totalWeight += weightList[i];
    }
-
+  cout << "total weight " << totalWeight << endl;
   #if LIBGRAPH_FILE_OUTPUT
   out->close();
   #endif
+  return 0;
 }
 
-int::Graph::getEccentricity(int v) {
+int Graph::getEccentricity(int v) {
   float* distList;
   int* daddy;
   float ecc;
@@ -287,6 +289,16 @@ int::Graph::getEccentricity(int v) {
 
   representation->doDijkstra(v, distList, daddy, ecc);
   return ecc;
+}
+
+int Graph::getPaths(int v1, int v2, float *&distList, int *&daddy) {
+  float dummy;
+
+  if(!representation->isValidVertex(v1) || !representation->isValidVertex(v2))
+    return -1;
+
+  representation->doDijkstra(v1, distList, daddy, dummy);
+  return 0;
 }
 
 

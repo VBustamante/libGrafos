@@ -88,7 +88,35 @@ int main() {
             if(p == -1) cout<<"Invalid vertex" << endl;
             else cout << "Found eccentricity "<< p << " from vertex " << v1 <<endl;
         }else cout << "Attr error";
-    } else{
+    }
+    else if(cmd == "path") {
+      int v1, v2;
+      float *distList;
+      int *daddy;
+      float distance;
+      if((cin >> v1) && (cin >> v2)){
+        int p = g->getPaths(v1, v2, distList, daddy);
+        if(p == -1) cout<<"Couldn't find "<<v2<<" from "<<v1<<endl;
+        else {
+          cout << "Found path to " << v2 << " from vertex " << v1 << endl;
+          distance = distList[v2-1];
+          while (v2 != v1) {
+            cout << v2 << " ";
+            v2 = daddy[v2 - 1];
+          }
+          cout << v1 << endl << "With distance " << distance << endl;
+        }
+      }else cout << "Attr error";
+    }
+    else if(cmd == "mst") {
+      int v1;
+      if((cin >> v1)){
+        int p = g->generateMinimumSpanningTree(v1);
+        if(p == -1) cout<<"Invalid vertex" << endl;
+        else cout << "Generated Minimum Spanning Tree from vertex " << v1 <<endl;
+      }else cout << "Attr error";
+    }
+    else{
       cout << "Unknown command";
     }
 

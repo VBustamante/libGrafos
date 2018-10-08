@@ -27,8 +27,9 @@ public:
   void generateSearchTree(int vertex, SearchType searchType);
   int doSearch(int root, int target, SearchType type);
   int getDiameter();
-  void generateMinimunSpanningTree(int v);
+  int generateMinimumSpanningTree(int v);
   int getEccentricity(int v);
+  int getPaths(int v1, int v2, float *&distList, int *&daddy);
 
   void dump();
   ~Graph();
