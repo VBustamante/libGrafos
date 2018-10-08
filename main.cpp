@@ -13,7 +13,7 @@ int main() {
     //char const * fileFilterPatterns[] = { "*.txt"};
     //const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
 
-    g = new Graph("graphs/pesos.txt", Graph::RepresentationType::WEIGHTED_ADJ_LIST);
+    g = new Graph("graphs/grafo_1.txt", Graph::RepresentationType::WEIGHTED_ADJ_LIST);
     g->dump();
   }catch (const char* msg){
     cout << msg<<endl;
@@ -80,7 +80,15 @@ int main() {
         if(p == -1) cout<<"Couldn't find "<<v2<<" from "<<v1<<endl;
         else cout << "Found "<<v2<< " from " << v1 << " via " << p;
       }else cout << "Attr error";
-    }else{
+    }
+    else if(cmd == "ecc") {
+        int v1;
+        if((cin >> v1)){
+            int p = g->getEccentricity(v1);
+            if(p == -1) cout<<"Invalid vertex" << endl;
+            else cout << "Found eccentricity "<< p << " from vertex " << v1 <<endl;
+        }else cout << "Attr error";
+    } else{
       cout << "Unknown command";
     }
 

@@ -27,6 +27,8 @@ public:
   void generateSearchTree(int vertex, SearchType searchType);
   int doSearch(int root, int target, SearchType type);
   int getDiameter();
+  void generateMinimunSpanningTree(int v);
+  int getEccentricity(int v);
 
   void dump();
   ~Graph();
@@ -46,7 +48,8 @@ protected:
     void doBfs(int root, vector<bool> &visited, function<void(int, int)> hook);
     void getConnectedComponents(list < list<int> *> &connectedComponents);
     //acochambracao
-    virtual void doDijkstra(int v)=0;
+    virtual bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity)=0;
+    virtual void doPrim(int v, float *&costList, int *&daddy)=0;
 
     virtual ~Representation() = default;;
 
@@ -66,8 +69,8 @@ protected:
     unsigned int getDegree(int vertex) override;
     void getNeighbours(int vertex, list<int> &neighbours) override;
 
-    virtual void doDijkstra(int v) override {};
-
+    bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity) override {return false;};
+    void doPrim(int v, float *&costList, int *&daddy) override {};
   private:
     int calc1DIndex(int v1, int v2);
     vector<bool> adjacencies;
@@ -83,7 +86,8 @@ protected:
     unsigned int getDegree(int vertex) override;
     void getNeighbours(int vertex, list<int> &neighbours) override;
 
-    virtual void doDijkstra(int v) override {};
+    bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity) override {return false;};
+    void doPrim(int v, float *&costList, int *&daddy) override {};
 
   private:
     list<int> **adjacencies;
@@ -101,7 +105,8 @@ protected:
       unsigned int getDegree(int vertex) override;
       void getNeighbours(int vertex, list<int> &neighbours) override;
       void getWeightedNeighbours(int vertex, list<pair<int,float>> &neighbours);
-      void doDijkstra(int v) override;
+      bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity) override;
+      void doPrim(int v, float *&costList, int *&daddy) override;
 
   private:
       list<pair<int,float>> **adjacencies;

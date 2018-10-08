@@ -139,8 +139,8 @@ void Graph::dump() {
 
     delete component;
   }
-  cout << "a" << endl;
-  representation->doDijkstra(1);
+
+//  generateMinimunSpanningTree(0);
 
   *out << "Dumped (" << (GetTimeMs64() - start) << "ms)" << endl;
   #if LIBGRAPH_FILE_OUTPUT
@@ -242,6 +242,54 @@ int Graph::getDiameter(){
   cout << "from "<<estrangedPair.first<<" to "<<estrangedPair.second<<endl;
   return maxLevel;
 };
+
+void Graph::generateMinimunSpanningTree(int v) {
+  #if LIBGRAPH_FILE_OUTPUT
+    ofstream file;
+        file.open("minimumSpanningTree.txt");
+        ofstream *out = &file;
+  #else
+    ostream *out = &cout;
+  #endif
+
+   int *daddy;
+   float *weightList;
+
+   if(!representation->isValidVertex(v)){
+     *out << "invalid starting point vertex" << endl;
+      #if LIBGRAPH_FILE_OUTPUT
+           out->close();
+      #endif
+     return;
+   }
+
+   representation->doPrim(v, weightList, daddy);
+   *out << representation->getVertexCount() << endl;
+
+   for(int i=0; i < representation->getVertexCount(); i++){
+     if(i+1 != daddy[i]){
+       *out << i+1 << " " << daddy[i] << " " << weightList[i] << endl;
+     }
+   }
+
+  #if LIBGRAPH_FILE_OUTPUT
+  out->close();
+  #endif
+}
+
+int::Graph::getEccentricity(int v) {
+  float* distList;
+  int* daddy;
+  float ecc;
+
+  if(!representation->isValidVertex(v))
+    return -1;
+
+  representation->doDijkstra(v, distList, daddy, ecc);
+  return ecc;
+}
+
+
 // Internal Classes
 bool Graph::Representation::isValidVertex(int v) {
   bool c = (v>0 && v<= vertexCount);
@@ -479,35 +527,94 @@ void Graph::WeightedAdjacencyList::getWeightedNeighbours(int vertex, list<pair<i
   }
 }
 
-void Graph::WeightedAdjacencyList::doDijkstra(int v){
+//Receives v as the starting point. Returns a list of distances from i (list index) to v, and a list of i's parent
+//TODO possivelmente da p juntar dijkstra e prim em uma func só
+bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity){
   priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> distHeap;
-  float distList[vertexCount];
-  cout << "b" << endl;
+  distList = new float[vertexCount];
+  daddy = new int[vertexCount];
+  bool explored[vertexCount];
+  float ecc = 0;
 
   for(int i=0; i < vertexCount; i++){
     distList[i] = 2147483647;
+    daddy[i] = -1;
+    explored[i] = false;
   }
   distList[v-1] = 0;
+  daddy[v-1] = v;
   distHeap.push(make_pair(0, v));
 
+  //TODO não ótimo, acaba antes da heap ficar vazia?
   while(!distHeap.empty()){
     int u = distHeap.top().second;
+
+    if(ecc < distHeap.top().first && !explored[u-1]){
+      ecc = distHeap.top().first;
+    }
+
     distHeap.pop();
+    explored[u-1] = true;
 
     list<pair<int,float>> *neighbours = adjacencies[u-1];
-//    getWeightedNeighbours(u, neighbours);
     for(pair<int,float> w: *neighbours){
       //w.first is the vertex, w.second is the weight from u to w
-      if(distList[w.first-1] > distList[u-1] + w.second) {
-        distList[w.first - 1] = distList[u - 1] + w.second;
-        distHeap.push(make_pair(distList[w.first - 1], w.first));
+      if(!explored[w.first-1]) {
+        if (w.second < 0) {
+          cout << "Negative weight not supported by Dijkstra algorithmn" << endl;
+          return false;
+        }
+        if (distList[w.first - 1] > distList[u - 1] + w.second) {
+          distList[w.first - 1] = distList[u - 1] + w.second;
+          distHeap.push(make_pair(distList[w.first - 1], w.first));
+          daddy[w.first - 1] = u;
+
+        }
+      }
+    }
+  }
+  eccentricity = ecc;
+  return true;
+}
+
+void Graph::WeightedAdjacencyList::doPrim(int v, float *&costList, int *&daddy) {
+  priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> costHeap;
+  costList = new float[vertexCount];
+  daddy = new int [vertexCount];
+  bool explored[vertexCount];
+
+  for(int i=0; i < vertexCount; i++){
+    costList[i] = 2147483647;
+    daddy[i] = -1;
+    explored[i] = false;
+  }
+
+  costList[v-1] = 0;
+  costHeap.push(make_pair(0, v));
+  daddy[v-1] = v;
+
+  //TODO não ótimo, acaba antes da heap ficar vazia?
+  while(!costHeap.empty()){
+    int u = costHeap.top().second;
+    costHeap.pop();
+    explored[u-1] = true;
+
+    list<pair<int,float>> *neighbours = adjacencies[u-1];
+    for(pair<int,float> w: *neighbours) {
+      if(!explored[w.first-1]) {
+        if (costList[w.first - 1] > w.second) {
+          costList[w.first - 1] = w.second;
+          costHeap.push(make_pair(w.second, w.first));
+          daddy[w.first - 1] = u;
+        }
       }
     }
   }
 
-  cout<< "distance from " << v << "to" << endl;
-  for(int i=0; i<vertexCount; i++)
-    cout<< i+1 << " - " << distList[i] << endl;
+//  cout << "MST" << endl;
+//  for(int i=0; i < vertexCount; i++){
+//    cout << i+1 << " - " << daddy[i] << endl;
+//  }
 }
 
 
