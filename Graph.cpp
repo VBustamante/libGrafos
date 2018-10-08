@@ -128,12 +128,12 @@ void Graph::dump() {
 
     #define LIBGRAPH_VERTS_PER_LINE 10
 
-    int vCount = 0;
-    for(auto v: *component){
-      if(vCount % LIBGRAPH_VERTS_PER_LINE == 0) *out << endl;
-      vCount += 1;
-      *out << setw(7) << left << v <<" ";
-    }
+//    int vCount = 0;
+//    for(auto v: *component){
+//      if(vCount % LIBGRAPH_VERTS_PER_LINE == 0) *out << endl;
+//      vCount += 1;
+//      *out << setw(7) << left << v <<" ";
+//    }
 
     *out << endl;
 
