@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 
 #include "Graph.h"
 #include "GetTimeMs64.h"
@@ -13,8 +14,8 @@ int main() {
     //char const * fileFilterPatterns[] = { "*.txt"};
     //const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
 
-    g = new Graph("graphs/grafo_3.txt", Graph::RepresentationType::WEIGHTED_ADJ_LIST);
-    //g->dump();
+    g = new Graph("graphs/grafo_5.txt", Graph::RepresentationType::WEIGHTED_ADJ_LIST);
+    g->dump();
   }catch (const char* msg){
     cout << msg<<endl;
     cout << "Halting" <<endl;
@@ -84,7 +85,7 @@ int main() {
     else if(cmd == "ecc") {
         int v1;
         if((cin >> v1)){
-            int p = g->getEccentricity(v1);
+            float p = g->getEccentricity(v1);
             if(p == -1) cout<<"Invalid vertex" << endl;
             else cout << "Found eccentricity "<< p << " from vertex " << v1 <<endl;
         }else cout << "Attr error";
@@ -115,6 +116,17 @@ int main() {
         if(p == -1) cout<<"Invalid vertex" << endl;
         else cout << "Generated Minimum Spanning Tree from vertex " << v1 <<endl;
       }else cout << "Attr error";
+    }
+    else if(cmd == "avgdist") {
+      float p = g->getAverageDistance();
+      if(p == -1) cout<<"Invalid vertex" << endl;
+      else cout << "Average distance is " << p <<endl;
+    }
+    else if(cmd == "ecctime") {
+      int vertexCount = g->getVertexCount();
+      for (int i = 0; i<100; i++){
+        g->getEccentricity(rand() % vertexCount + 1);
+      }
     }
     else{
       cout << "Unknown command";

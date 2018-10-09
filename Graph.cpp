@@ -279,28 +279,35 @@ int Graph::generateMinimumSpanningTree(int v) {
   return 0;
 }
 
-int Graph::getEccentricity(int v) {
-  float* distList;
-  int* daddy;
+float Graph::getEccentricity(int v) {
   float ecc;
-
   if(!representation->isValidVertex(v))
     return -1;
-
-  representation->doDijkstra(v, distList, daddy, ecc);
+  representation->doDijkstra(v, ecc);
   return ecc;
 }
 
 int Graph::getPaths(int v1, int v2, float *&distList, int *&daddy) {
-  float dummy;
-
   if(!representation->isValidVertex(v1) || !representation->isValidVertex(v2))
     return -1;
 
-  representation->doDijkstra(v1, distList, daddy, dummy);
+  representation->doDijkstra(v1, distList, daddy, v2);
   return 0;
 }
 
+float Graph::getAverageDistance() {
+  float *distList;
+  float avgDist = 0;
+  int vertexCount = representation->getVertexCount();
+
+  for(int i = 0; i <  vertexCount; i++){
+    representation->doDijkstra(i+1, distList);
+    for(int j = i; j < vertexCount; j++){
+      avgDist += distList[j];
+    }
+  }
+  return avgDist / ((vertexCount)*(vertexCount-1)/2);
+}
 
 // Internal Classes
 bool Graph::Representation::isValidVertex(int v) {
@@ -540,12 +547,11 @@ void Graph::WeightedAdjacencyList::getWeightedNeighbours(int vertex, list<pair<i
 }
 
 //Receives v as the starting point. Returns a list of distances from i (list index) to v, and a list of i's parent
-//TODO possivelmente da p juntar dijkstra e prim em uma func só
 bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity){
   priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> distHeap;
   distList = new float[vertexCount];
   daddy = new int[vertexCount];
-  bool explored[vertexCount];
+  bool *explored = new bool[vertexCount];
   float ecc = 0;
 
   for(int i=0; i < vertexCount; i++){
@@ -586,6 +592,134 @@ bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList, int *&dad
     }
   }
   eccentricity = ecc;
+  delete[] explored;
+  return true;
+}
+
+bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList, int *&daddy, int target){
+  priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> distHeap;
+  distList = new float[vertexCount];
+  daddy = new int[vertexCount];
+  bool *explored = new bool[vertexCount];
+
+  for(int i=0; i < vertexCount; i++){
+    distList[i] = 2147483647;
+    daddy[i] = -1;
+    explored[i] = false;
+  }
+  distList[v-1] = 0;
+  daddy[v-1] = v;
+  distHeap.push(make_pair(0, v));
+
+  while(!distHeap.empty()){
+    int u = distHeap.top().second;
+
+    if(u == target){
+      break;
+    }
+
+    distHeap.pop();
+    explored[u-1] = true;
+
+    list<pair<int,float>> *neighbours = adjacencies[u-1];
+    for(pair<int,float> w: *neighbours){
+      //w.first is the vertex, w.second is the weight from u to w
+      if(!explored[w.first-1]) {
+        if (w.second < 0) {
+          cout << "Negative weight not supported by Dijkstra algorithmn" << endl;
+          return false;
+        }
+        if (distList[w.first - 1] > distList[u - 1] + w.second) {
+          distList[w.first - 1] = distList[u - 1] + w.second;
+          distHeap.push(make_pair(distList[w.first - 1], w.first));
+          daddy[w.first - 1] = u;
+
+        }
+      }
+    }
+  }
+  delete[] explored;
+  return true;
+}
+
+bool Graph::WeightedAdjacencyList::doDijkstra(int v, float &eccentricity){
+    priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> distHeap;
+    float *distList = new float[vertexCount];
+    bool *explored = new bool[vertexCount];
+    float ecc = 0;
+
+    for(int i=0; i < vertexCount; i++){
+        distList[i] = 2147483647;
+        explored[i] = false;
+    }
+    distList[v-1] = 0;
+    distHeap.push(make_pair(0, v));
+
+    while(!distHeap.empty()){
+        int u = distHeap.top().second;
+
+        if(ecc < distHeap.top().first && !explored[u-1]){
+            ecc = distHeap.top().first;
+        }
+
+        distHeap.pop();
+        explored[u-1] = true;
+
+        list<pair<int,float>> *neighbours = adjacencies[u-1];
+        for(pair<int,float> w: *neighbours){
+            //w.first is the vertex, w.second is the weight from u to w
+            if(!explored[w.first-1]) {
+                if (w.second < 0) {
+                    cout << "Negative weight not supported by Dijkstra algorithmn" << endl;
+                    return false;
+                }
+                if (distList[w.first - 1] > distList[u - 1] + w.second) {
+                    distList[w.first - 1] = distList[u - 1] + w.second;
+                    distHeap.push(make_pair(distList[w.first - 1], w.first));
+                }
+            }
+        }
+    }
+    eccentricity = ecc;
+    delete[] explored;
+    return true;
+}
+
+bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList){
+  priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> distHeap;
+  distList = new float[vertexCount];
+  bool *explored = new bool[vertexCount];
+
+  for(int i=0; i < vertexCount; i++){
+    distList[i] = 2147483647;
+    explored[i] = false;
+  }
+  distList[v-1] = 0;
+  distHeap.push(make_pair(0, v));
+
+  //TODO não ótimo, acaba antes da heap ficar vazia?
+  while(!distHeap.empty()){
+    int u = distHeap.top().second;
+
+    distHeap.pop();
+    explored[u-1] = true;
+
+    list<pair<int,float>> *neighbours = adjacencies[u-1];
+    for(pair<int,float> w: *neighbours){
+      //w.first is the vertex, w.second is the weight from u to w
+      if(!explored[w.first-1]) {
+        if (w.second < 0) {
+          cout << "Negative weight not supported by Dijkstra algorithmn" << endl;
+          return false;
+        }
+        if (distList[w.first - 1] > distList[u - 1] + w.second) {
+          distList[w.first - 1] = distList[u - 1] + w.second;
+          distHeap.push(make_pair(distList[w.first - 1], w.first));
+        }
+      }
+    }
+  }
+  delete[] explored;
   return true;
 }
 
@@ -593,7 +727,7 @@ void Graph::WeightedAdjacencyList::doPrim(int v, float *&costList, int *&daddy) 
   priority_queue <pair<float, int>, vector<pair<float, int>>, greater<pair<float,int>>> costHeap;
   costList = new float[vertexCount];
   daddy = new int [vertexCount];
-  bool explored[vertexCount];
+  bool *explored = new bool[vertexCount];
 
   for(int i=0; i < vertexCount; i++){
     costList[i] = 2147483647;
@@ -623,10 +757,7 @@ void Graph::WeightedAdjacencyList::doPrim(int v, float *&costList, int *&daddy) 
     }
   }
 
-//  cout << "MST" << endl;
-//  for(int i=0; i < vertexCount; i++){
-//    cout << i+1 << " - " << daddy[i] << endl;
-//  }
+  delete[] explored;
 }
 
 

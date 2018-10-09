@@ -28,8 +28,9 @@ public:
   int doSearch(int root, int target, SearchType type);
   int getDiameter();
   int generateMinimumSpanningTree(int v);
-  int getEccentricity(int v);
+  float getEccentricity(int v);
   int getPaths(int v1, int v2, float *&distList, int *&daddy);
+  float getAverageDistance();
 
   void dump();
   ~Graph();
@@ -49,7 +50,10 @@ protected:
     void doBfs(int root, vector<bool> &visited, function<void(int, int)> hook);
     void getConnectedComponents(list < list<int> *> &connectedComponents);
     //acochambracao
-    virtual bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity)=0;
+    virtual bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity)=0; //multi-purpose dijkstra
+    virtual bool doDijkstra(int v, float *&distList, int *&daddy, int target)=0; //dijkstra that stops on a target
+    virtual bool doDijkstra(int v, float &eccentricity)=0; //dijkstra for calculating eccentricity
+    virtual bool doDijkstra(int v, float *&distList)=0; //dijkstra for calculating average distance
     virtual void doPrim(int v, float *&costList, int *&daddy)=0;
 
     virtual ~Representation() = default;;
@@ -71,6 +75,9 @@ protected:
     void getNeighbours(int vertex, list<int> &neighbours) override;
 
     bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity) override {return false;};
+    bool doDijkstra(int v, float *&distList, int *&daddy, int target)override {return false;};
+    bool doDijkstra(int v, float &eccentricity) override {return false;};
+    bool doDijkstra(int v, float *&distList) override {return false;};
     void doPrim(int v, float *&costList, int *&daddy) override {};
   private:
     int calc1DIndex(int v1, int v2);
@@ -88,6 +95,9 @@ protected:
     void getNeighbours(int vertex, list<int> &neighbours) override;
 
     bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity) override {return false;};
+    bool doDijkstra(int v, float *&distList, int *&daddy, int target)override {return false;};
+    bool doDijkstra(int v, float &eccentricity) override {return false;};
+    bool doDijkstra(int v, float *&distList) override {return false;};
     void doPrim(int v, float *&costList, int *&daddy) override {};
 
   private:
@@ -107,6 +117,9 @@ protected:
       void getNeighbours(int vertex, list<int> &neighbours) override;
       void getWeightedNeighbours(int vertex, list<pair<int,float>> &neighbours);
       bool doDijkstra(int v, float *&distList, int *&daddy, float &eccentricity) override;
+      bool doDijkstra(int v, float *&distList, int *&daddy, int target)override;
+      bool doDijkstra(int v, float &eccentricity) override;
+      bool doDijkstra(int v, float *&distList) override;
       void doPrim(int v, float *&costList, int *&daddy) override;
 
   private:
