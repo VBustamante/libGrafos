@@ -122,23 +122,23 @@ void Graph::dump() {
 
   *out << "Connected Components: " << cc.size() << endl;
 
-  unsigned int cIndex = 0;
-  for(auto component: cc){
-    *out << "Component " << ++cIndex << ", size: " << component->size()<< ", vertices:";
-
-    #define LIBGRAPH_VERTS_PER_LINE 10
-
-//    int vCount = 0;
-//    for(auto v: *component){
-//      if(vCount % LIBGRAPH_VERTS_PER_LINE == 0) *out << endl;
-//      vCount += 1;
-//      *out << setw(7) << left << v <<" ";
-//    }
-
-    *out << endl;
-
-    delete component;
-  }
+//  unsigned int cIndex = 0;
+//  for(auto component: cc){
+//    *out << "Component " << ++cIndex << ", size: " << component->size()<< ", vertices:";
+//
+//    #define LIBGRAPH_VERTS_PER_LINE 10
+//
+////    int vCount = 0;
+////    for(auto v: *component){
+////      if(vCount % LIBGRAPH_VERTS_PER_LINE == 0) *out << endl;
+////      vCount += 1;
+////      *out << setw(7) << left << v <<" ";
+////    }
+//
+//    *out << endl;
+//
+//    delete component;
+//  }
 
 //  generateMinimunSpanningTree(0);
 
@@ -267,7 +267,7 @@ int Graph::generateMinimumSpanningTree(int v) {
    *out << representation->getVertexCount() << endl;
 
    for(int i=0; i < representation->getVertexCount(); i++){
-     if(i+1 != daddy[i]){
+     if(i+1 != daddy[i] && daddy[i]!=-1){
        *out << i+1 << " " << daddy[i] << " " << weightList[i] << endl;
      }
      totalWeight += weightList[i];
@@ -291,8 +291,11 @@ int Graph::getPaths(int v1, int v2, float *&distList, int *&daddy) {
   if(!representation->isValidVertex(v1) || !representation->isValidVertex(v2))
     return -1;
 
-  representation->doDijkstra(v1, distList, daddy, v2);
-  return 0;
+  if(representation->doDijkstra(v1, distList, daddy, v2)){
+      return 0;
+  }
+
+  return -1;
 }
 
 float Graph::getAverageDistance() {
@@ -308,6 +311,10 @@ float Graph::getAverageDistance() {
     delete[] distList;
   }
   return avgDist / ((vertexCount)*(vertexCount-1)/2);
+}
+
+void Graph::getNeighbours(int vertex, list<int> &neighbours) {
+    representation->getNeighbours(vertex, neighbours);
 }
 
 // Internal Classes
@@ -602,6 +609,7 @@ bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList, int *&dad
   distList = new float[vertexCount];
   daddy = new int[vertexCount];
   bool *explored = new bool[vertexCount];
+  bool found = false;
 
   for(int i=0; i < vertexCount; i++){
     distList[i] = 2147483647;
@@ -616,6 +624,7 @@ bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList, int *&dad
     int u = distHeap.top().second;
 
     if(u == target){
+      found = true;
       break;
     }
 
@@ -640,7 +649,7 @@ bool Graph::WeightedAdjacencyList::doDijkstra(int v, float *&distList, int *&dad
     }
   }
   delete[] explored;
-  return true;
+  return found;
 }
 
 bool Graph::WeightedAdjacencyList::doDijkstra(int v, float &eccentricity){

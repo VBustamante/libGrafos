@@ -31,6 +31,7 @@ public:
   float getEccentricity(int v);
   int getPaths(int v1, int v2, float *&distList, int *&daddy);
   float getAverageDistance();
+  void getNeighbours(int vertex, list<int> &neighbours);
 
   void dump();
   ~Graph();

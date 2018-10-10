@@ -128,6 +128,15 @@ int main() {
         g->getEccentricity(rand() % vertexCount + 1);
       }
     }
+    else if(cmd == "nb") {
+        int v1;
+        list<int> neighbours;
+        if((cin >> v1)){
+            g->getNeighbours(v1, neighbours);
+            for(auto n: neighbours) cout << n << " ";
+        }else cout << "Attr error";
+        cout << endl;
+    }
     else{
       cout << "Unknown command";
     }
