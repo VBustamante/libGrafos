@@ -296,15 +296,16 @@ int Graph::getPaths(int v1, int v2, float *&distList, int *&daddy) {
 }
 
 float Graph::getAverageDistance() {
-  float *distList;
   float avgDist = 0;
   int vertexCount = representation->getVertexCount();
 
   for(int i = 0; i <  vertexCount; i++){
+    float *distList;
     representation->doDijkstra(i+1, distList);
     for(int j = i; j < vertexCount; j++){
       avgDist += distList[j];
     }
+    delete[] distList;
   }
   return avgDist / ((vertexCount)*(vertexCount-1)/2);
 }
@@ -682,6 +683,7 @@ bool Graph::WeightedAdjacencyList::doDijkstra(int v, float &eccentricity){
     }
     eccentricity = ecc;
     delete[] explored;
+    delete[] distList;
     return true;
 }
 
