@@ -19,3 +19,11 @@ Implementação de operações comuns com grafos em c++
     - número ✔
     - tamanho (em vértices) ✔
     - lista de vértices de cada ✔
+
+##### Parte 3:
+
+- Representação interna de geografos (grafos conexos com valores x, y para cada vetor)
+- Novo construstor
+- Resolver caixeiro viajante
+  - Retornar caminho por texto
+  - Retornar caminho visualmente
