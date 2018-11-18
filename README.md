@@ -22,8 +22,8 @@ Implementação de operações comuns com grafos em c++
 
 ##### Parte 3:
 
-- Representação interna de geografos (grafos conexos com valores x, y para cada vetor)
-- Novo construstor
+- Representação interna de geografos (grafos conexos com valores x, y para cada vetor) ✔
+- Novo construtor ✔
 - Resolver caixeiro viajante
   - Retornar caminho por texto
   - Retornar caminho visualmente

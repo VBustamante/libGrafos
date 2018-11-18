@@ -21,6 +21,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 
 
-add_executable(LibGrafos ${SOURCE_FILES} main.cpp Graph.cpp Graph.h GetTimeMs64.cpp tinyfiledialogs.c)
+add_executable(LibGrafos ${SOURCE_FILES} main.cpp Graph.cpp Graph.h GetTimeMs64.cpp tinyfiledialogs.c EuclidianGraph.cpp EuclidianGraph.h)
 
 target_link_libraries(LibGrafos)
