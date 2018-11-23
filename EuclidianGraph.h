@@ -17,10 +17,11 @@ public:
   explicit EuclidianGraph(std::string fileName);
   ~EuclidianGraph();
   void dump();
-  double getDistance(unsigned int a, unsigned int b);
+  double getDistance(int a, int b);
   void solveTsp();
 
 private:
+  void printPath(int **r, int i, int j);
   unsigned int vCount;
   pair<unsigned int, unsigned int> max; // max(x, y)
   pair<unsigned int, unsigned int> min; // min(x, y)

@@ -59,7 +59,7 @@ void EuclidianGraph::dump() {
 EuclidianGraph::~EuclidianGraph() = default;
 
 
-double EuclidianGraph::getDistance(unsigned int a, unsigned int b) {
+double EuclidianGraph::getDistance(int a, int b) {
   if(a >= vCount || b>= vCount) return -1;
 
   int dx = nodes[a].first - nodes[b].first;
@@ -78,4 +78,67 @@ void EuclidianGraph::solveTsp() {
   for(int i = 0; i < vCount; i++){
     cout << i << ": " << nodes[i].first << " - " << nodes[i].second << endl;
   }
+
+  auto **b = new double*[vCount];
+  for(int i = 0; i < vCount; i++) {
+    b[i] = new double[vCount];
+  }
+
+  auto **r = new int*[vCount-2];
+  for(int i = 0; i < vCount-2; i++) {
+    r[i] = new int[vCount];
+  }
+
+  b[0][1] = getDistance(0, 1);
+  for(int j = 2; j < vCount; j++){
+    for(int i = 0; i < j-2; i++){
+      b[i][j] = b[i][j-1] +  getDistance(j-1, j);
+      r[i][j] = j - 1;
+    }
+
+    b[j-1][j] = numeric_limits<double>::max();
+
+    for(int k = 0; k < j-2; k++) {
+      double q = b[k][j - 1] + getDistance(k, j);
+      if(q < b[j - 1][j]){
+        b[j - 1][j] = q;
+        r[j - 1][j] = k;
+      }
+    }
+  };
+  b[vCount - 1][vCount - 1] = b[vCount-2][vCount - 1] + getDistance(vCount - 2, vCount - 1);
+
+  cout << (vCount - 1) << " - ";
+  cout << (vCount - 2) << " - ";
+  int k = r[vCount - 2][vCount - 1];
+  printPath(r, k, vCount - 2);
+  cout << k << endl;
+
+
+  // Cleanup
+  for(int i = 0; i < vCount; i++) {
+    delete b[i];
+  }
+  delete[] b;
+
+  for(int i = 0; i < vCount-2; i++) {
+    delete r[i];
+  }
+  delete[] r;
 }
+
+void EuclidianGraph::printPath(int **r, int i, int j) {
+  int k;
+  if(i < j){
+    k = r[i][j];
+    if(k != i) cout << k << " - ";
+    if(k > 0) printPath(r, i, k);
+  }else{
+    k = r[j][i];
+    if(k > 0){
+      printPath(r, k, j);
+      cout << k << " - ";
+    }
+  }
+}
+
