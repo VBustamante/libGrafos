@@ -21,11 +21,14 @@ public:
   void solveTsp();
 
 private:
-  void printPath(int **r, int i, int j);
+  struct Node{
+    unsigned int x, y, id;
+  };
+  void printPath(vector<vector<int>> p, int i, int j);
   unsigned int vCount;
   pair<unsigned int, unsigned int> max; // max(x, y)
   pair<unsigned int, unsigned int> min; // min(x, y)
-  vector<pair<unsigned int, unsigned int>> nodes;
+  vector<Node> nodes;
 };
 
 

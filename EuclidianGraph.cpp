@@ -7,6 +7,7 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <iomanip>
 
 #include "EuclidianGraph.h"
 #include "GetTimeMs64.h"
@@ -20,26 +21,26 @@ EuclidianGraph::EuclidianGraph(std::string fileName) {
   vCount = 0;
   if(!(input >> vCount) || vCount < 1){
     input.close();
-    throw "File doesn't start with the vertex count (or it is less than 1)";
+    throw "File doesn't start with the vertex count or it is less than 1. (also go check if file exists)";
   }
   nodes.reserve(vCount);
 
   unsigned int x, y;
 
-  //a and b are vertices, w is the edge's weight. only works with weighted graphs
   for(unsigned int vIndex = 0; input >> x >> y; vIndex++){
     if(vIndex >= vCount){
       input.close();
       throw "Wrong vertex count (too many nodes)";
     }
 
-    if(x > nodes[max.first].first) max.first = vIndex;
-    else if(x < nodes[min.first].first) min.first = vIndex;
-    if(y > nodes[max.second].second) max.second = vIndex;
-    else if(y < nodes[min.second].second) min.second = vIndex;
+    if(x > nodes[max.first].x) max.first = vIndex;
+    else if(x < nodes[min.first].x) min.first = vIndex;
+    if(y > nodes[max.second].y) max.second = vIndex;
+    else if(y < nodes[min.second].y) min.second = vIndex;
 
-    nodes[vIndex].first = x;
-    nodes[vIndex].second = y;
+    nodes[vIndex].x = x;
+    nodes[vIndex].y = y;
+    nodes[vIndex].id = vIndex + 1;
   }
 
   cout << "Created Euclidian Graph from " << fileName << " ("<< (GetTimeMs64() - start) << "ms)"<< endl;
@@ -50,8 +51,8 @@ EuclidianGraph::EuclidianGraph(std::string fileName) {
 
 void EuclidianGraph::dump() {
   cout << "Vertices: " << vCount << endl;
-  cout << "X Range: " << nodes[min.first].first << " to " << nodes[max.first].first << endl;
-  cout << "Y Range: " << nodes[min.second].second << " to " << nodes[max.second].second << endl;
+  cout << "X Range: " << nodes[min.first].x << " to " << nodes[max.first].x << endl;
+  cout << "Y Range: " << nodes[min.second].y << " to " << nodes[max.second].y << endl;
 }
 
 
@@ -62,8 +63,8 @@ EuclidianGraph::~EuclidianGraph() = default;
 double EuclidianGraph::getDistance(int a, int b) {
   if(a >= vCount || b>= vCount) return -1;
 
-  int dx = nodes[a].first - nodes[b].first;
-  int dy = nodes[a].second - nodes[b].second;
+  int dx = nodes[a].x - nodes[b].x;
+  int dy = nodes[a].y - nodes[b].y;
 
   return sqrt(pow(dx, 2) + pow(dy, 2));
 
@@ -71,74 +72,73 @@ double EuclidianGraph::getDistance(int a, int b) {
 
 void EuclidianGraph::solveTsp() {
 
-  sort(nodes.begin(), nodes.begin() + vCount, [](pair<unsigned int,  unsigned int> a, pair<unsigned int,  unsigned int> b){
-    return a.first < b.first;
+  sort(nodes.begin(), nodes.begin() + vCount, [](Node a, Node b){
+    return a.x < b.x;
   });
 
   for(int i = 0; i < vCount; i++){
-    cout << i << ": " << nodes[i].first << " - " << nodes[i].second << endl;
+    cout << nodes[i].id << ": (" << nodes[i].x << ", " << nodes[i].y << ")" << endl;
   }
 
-  auto **b = new double*[vCount];
-  for(int i = 0; i < vCount; i++) {
-    b[i] = new double[vCount];
+  std::vector<std::vector<double>> b; // Stores the cost of shortest bitonic path [i][j]
+
+  vector<vector<int>> p(vCount, vector<int>(vCount, vCount)); // Stores the parent of J of shortest bitonic path [i][j]
+
+
+  b.resize(vCount);
+  for(unsigned int i=0; i<vCount; i++){
+    b.at(i).resize(vCount);
   }
 
-  auto **r = new int*[vCount-2];
-  for(int i = 0; i < vCount-2; i++) {
-    r[i] = new int[vCount];
+  b[0][0] = 0;
+
+  for(unsigned int j=1; j<vCount; j++) {
+    b[0][j] = b[0][j-1] + getDistance(j-1, j);
+    p[0][j] = j-1;
   }
 
-  b[0][1] = getDistance(0, 1);
-  for(int j = 2; j < vCount; j++){
-    for(int i = 0; i < j-2; i++){
-      b[i][j] = b[i][j-1] +  getDistance(j-1, j);
-      r[i][j] = j - 1;
-    }
-
-    b[j-1][j] = numeric_limits<double>::max();
-
-    for(int k = 0; k < j-2; k++) {
-      double q = b[k][j - 1] + getDistance(k, j);
-      if(q < b[j - 1][j]){
-        b[j - 1][j] = q;
-        r[j - 1][j] = k;
+  for(int i = 1; i < vCount; i++) {
+    for(int j = i; j < vCount; j++) {
+      b[i][j] = -1;
+      if( i == j || i == j-1 ) {
+        auto min = std::numeric_limits<double>::max();
+        int parent = 9;
+        for(int k = 0; k < i; k++){
+          auto t = b[k][i] + getDistance(k, j);
+          if(t < min){
+            min=t;
+            parent = k;
+          }
+        }
+        b[i][j] = min;
+        p[i][j] = parent;
+      } else {
+        b[i][j] = b[i][j-1] + getDistance(j-1, j);
+        p[i][j] = j-1;
       }
     }
-  };
-  b[vCount - 1][vCount - 1] = b[vCount-2][vCount - 1] + getDistance(vCount - 2, vCount - 1);
-
-  cout << (vCount - 1) << " - ";
-  cout << (vCount - 2) << " - ";
-  int k = r[vCount - 2][vCount - 1];
-  printPath(r, k, vCount - 2);
-  cout << k << endl;
-
-
-  // Cleanup
-  for(int i = 0; i < vCount; i++) {
-    delete b[i];
   }
-  delete[] b;
+  cout << "The cost of the minimal bitonic tour is " << b[vCount -1][vCount -1] << endl;
 
-  for(int i = 0; i < vCount-2; i++) {
-    delete r[i];
-  }
-  delete[] r;
+
+  cout << nodes[vCount - 1].id<< " ";
+  cout << nodes[vCount - 2].id<< " ";
+  auto k = p[vCount - 2][vCount - 1];
+  printPath(p, k, vCount - 1 - 1);
+  cout << nodes[k].id << endl;
+
 }
 
-void EuclidianGraph::printPath(int **r, int i, int j) {
+void EuclidianGraph::printPath(vector<vector<int>> p, int i, int j) {
   int k;
   if(i < j){
-    k = r[i][j];
-    if(k != i) cout << k << " - ";
-    if(k > 0) printPath(r, i, k);
+    k = p[i][j];
+    if(k != i) cout << nodes[k].id << " ";
+    if(k > 0) printPath(p, i, k);
   }else{
-    k = r[j][i];
-    if(k > 0){
-      printPath(r, k, j);
-      cout << k << " - ";
-    }
+    k = p[j][i];
+    if(k > 0) printPath(p, k, j);
+    cout << nodes[k].id << " ";
   }
 }
 
