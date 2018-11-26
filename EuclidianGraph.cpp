@@ -8,6 +8,7 @@
 #include <cmath>
 #include <algorithm>
 #include <iomanip>
+#include <stack>
 
 #include "EuclidianGraph.h"
 #include "GetTimeMs64.h"
@@ -120,25 +121,40 @@ void EuclidianGraph::solveTsp() {
   }
   cout << "The cost of the minimal bitonic tour is " << b[vCount -1][vCount -1] << endl;
 
+  auto path = b[0];
+  {
+    auto path1 = stack<int>();
+    auto path2 = stack<int>();
+    auto activePath = &path1;
 
-  cout << nodes[vCount - 1].id<< " ";
-  cout << nodes[vCount - 2].id<< " ";
-  auto k = p[vCount - 2][vCount - 1];
-  printPath(p, k, vCount - 1 - 1);
-  cout << nodes[k].id << endl;
+    int i = vCount - 2;
+    int j = vCount - 1;
 
-}
+    while(j>0){
+      activePath->push(j);
+      j = p[i][j];
+      if(j < i){
+        auto temp = i;
+        i = j;
+        j = temp;
+        activePath = activePath == &path1? &path2 : &path1;
+      }
+    }
+    path1.push(0);
 
-void EuclidianGraph::printPath(vector<vector<int>> p, int i, int j) {
-  int k;
-  if(i < j){
-    k = p[i][j];
-    if(k != i) cout << nodes[k].id << " ";
-    if(k > 0) printPath(p, i, k);
-  }else{
-    k = p[j][i];
-    if(k > 0) printPath(p, k, j);
-    cout << nodes[k].id << " ";
+    cout << path1.size() << " + "<< path2.size() <<" should be " << vCount << endl;
+
+    auto carriage = 0;
+    while(!path1.empty()){
+      path[carriage++] = nodes[path1.top()].id;
+      path1.pop();
+    }
+    carriage = vCount - 1;
+    while(!path2.empty()){
+      path[carriage--] = nodes[path2.top()].id;
+      path2.pop();
+    }
   }
+  for(int i = 0; i< vCount; i++) cout << path[i] << " ";
+  cout << endl;
 }
-

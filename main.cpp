@@ -14,7 +14,7 @@ int main() {
   try {
     //char const * fileFilterPatterns[] = { "*.txt"};
     //const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
-    g = new EuclidianGraph("graphs/points-5.txt");
+    g = new EuclidianGraph("graphs/points-100.txt");
     g->dump();
   }catch (const char* msg){
     cout << msg<<endl;
