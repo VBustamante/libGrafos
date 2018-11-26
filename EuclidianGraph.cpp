@@ -77,10 +77,11 @@ void EuclidianGraph::solveTsp() {
     return a.x < b.x;
   });
 
-  for(int i = 0; i < vCount; i++){
-    cout << nodes[i].id << ": (" << nodes[i].x << ", " << nodes[i].y << ")" << endl;
-  }
-
+//  Print ordered nodes
+//  for(int i = 0; i < vCount; i++){
+//    cout << nodes[i].id << ": (" << nodes[i].x << ", " << nodes[i].y << ")" << endl;
+//  }
+//
   std::vector<std::vector<double>> b; // Stores the cost of shortest bitonic path [i][j]
 
   vector<vector<int>> p(vCount, vector<int>(vCount, vCount)); // Stores the parent of J of shortest bitonic path [i][j]
