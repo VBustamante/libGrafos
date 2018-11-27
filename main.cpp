@@ -5,6 +5,7 @@
 #include "GetTimeMs64.h"
 #include "tinyfiledialogs.h"
 #include "EuclidianGraph.h"
+#include "Screen.h"
 
 using namespace std;
 
@@ -12,9 +13,9 @@ int main() {
   cout << "Startup!" << endl;
   EuclidianGraph *g;
   try {
-    //char const * fileFilterPatterns[] = { "*.txt"};
-    //const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
-    g = new EuclidianGraph("graphs/points-100.txt");
+    char const * fileFilterPatterns[] = { "*.txt"};
+    const char* filename = tinyfd_openFileDialog("Selecione seu Grafo", "./graphs/.", 1, fileFilterPatterns, NULL, 0);
+    g = new EuclidianGraph(filename);
     g->dump();
   }catch (const char* msg){
     cout << msg<<endl;
@@ -40,6 +41,11 @@ int main() {
     }
     else if(cmd == "tsp"){
       g->solveTsp();
+    }
+    else if(cmd == "see"){
+      auto s = new Screen();
+
+      delete s;
     }
     else{
       cout << "Unknown command";
