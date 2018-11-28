@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <stack>
+#include <sstream>
 
 #include "EuclidianGraph.h"
 #include "GetTimeMs64.h"
@@ -22,22 +23,28 @@ EuclidianGraph::EuclidianGraph(std::string fileName) {
   vCount = 0;
   if(!(input >> vCount) || vCount < 1){
     input.close();
-    throw "File doesn't start with the vertex count or it is less than 1. (also go check if file exists)";
+    cout << "Erro reading " << fileName <<  endl;
+    throw "File doesn't start with the vertex count or it is less than 1. (also go check if it exists)";
   }
   nodes.reserve(vCount);
 
   unsigned int x, y;
 
+  maxX = maxY = 0;
+  minX = minY = numeric_limits<unsigned int>::max();
+
   for(unsigned int vIndex = 0; input >> x >> y; vIndex++){
     if(vIndex >= vCount){
       input.close();
+      cout << "Erro reading " << fileName <<  endl;
       throw "Wrong vertex count (too many nodes)";
     }
 
-    if(x > nodes[max.first].x) max.first = vIndex;
-    else if(x < nodes[min.first].x) min.first = vIndex;
-    if(y > nodes[max.second].y) max.second = vIndex;
-    else if(y < nodes[min.second].y) min.second = vIndex;
+    if(x > maxX) maxX = x;
+    else if(x < minX) minX = x;
+    if(y > maxY) maxY = y;
+    else if(y < minY) minY = y;
+
 
     nodes[vIndex].x = x;
     nodes[vIndex].y = y;
@@ -52,8 +59,8 @@ EuclidianGraph::EuclidianGraph(std::string fileName) {
 
 void EuclidianGraph::dump() {
   cout << "Vertices: " << vCount << endl;
-  cout << "X Range: " << nodes[min.first].x << " to " << nodes[max.first].x << endl;
-  cout << "Y Range: " << nodes[min.second].y << " to " << nodes[max.second].y << endl;
+  cout << "X Range: " << minX << " to " << maxX << endl;
+  cout << "Y Range: " << minY << " to " << maxY << endl;
 }
 
 
@@ -77,11 +84,6 @@ void EuclidianGraph::solveTsp() {
     return a.x < b.x;
   });
 
-//  Print ordered nodes
-//  for(int i = 0; i < vCount; i++){
-//    cout << nodes[i].id << ": (" << nodes[i].x << ", " << nodes[i].y << ")" << endl;
-//  }
-//
   std::vector<std::vector<double>> b; // Stores the cost of shortest bitonic path [i][j]
 
   vector<vector<int>> p(vCount, vector<int>(vCount, vCount)); // Stores the parent of J of shortest bitonic path [i][j]
@@ -122,7 +124,7 @@ void EuclidianGraph::solveTsp() {
   }
   cout << "The cost of the minimal bitonic tour is " << b[vCount -1][vCount -1] << endl;
 
-  auto path = b[0];
+  path.resize(vCount);
   {
     auto path1 = stack<int>();
     auto path2 = stack<int>();
@@ -147,15 +149,33 @@ void EuclidianGraph::solveTsp() {
 
     auto carriage = 0;
     while(!path1.empty()){
-      path[carriage++] = nodes[path1.top()].id;
+      path[carriage++] = nodes[path1.top()];
       path1.pop();
     }
     carriage = vCount - 1;
     while(!path2.empty()){
-      path[carriage--] = nodes[path2.top()].id;
+      path[carriage--] = nodes[path2.top()];
       path2.pop();
     }
   }
-  for(int i = 0; i< vCount; i++) cout << path[i] << " ";
+  for(int i = 0; i< vCount; i++) cout << path[i].id << " ";
   cout << endl;
+  pathStatus = true;
 }
+
+vector<EuclidianGraph::Node> *EuclidianGraph::getNodes() {
+  return &nodes;
+}
+
+vector<EuclidianGraph::Node> *EuclidianGraph::getPath() {
+  return pathStatus? &path: nullptr;
+}
+
+unsigned int EuclidianGraph::getMaxX(){return maxX;};
+unsigned int EuclidianGraph::getMaxY(){return maxY;};
+unsigned int EuclidianGraph::getMinX(){return minX;};
+unsigned int EuclidianGraph::getMinY(){return minY;}
+
+unsigned int EuclidianGraph::getN() {
+  return vCount;
+};

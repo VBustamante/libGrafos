@@ -3,12 +3,7 @@ project(LibGrafos)
 
 set(CMAKE_CXX_STANDARD 11)
 
-# Windows mingw linker options
-IF (WIN32)
-  set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -mwindows")
-ELSE()
-  set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
-ENDIF()
+set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 
 # Show all makefile commands
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -32,11 +27,6 @@ include_directories(libs/gl3w-master/include)
 add_subdirectory(libs/glm-0.9.9-a2)
 include_directories(libs/glm-0.9.9-a2/glm)
 
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-    add_definitions(-DSI_DEBUG)
-endif()
-
-
 # Copy Resources
 file(COPY graphs DESTINATION ./)
 file(COPY shaders DESTINATION ./)
@@ -46,7 +36,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DSI_DEBUG)
 endif()
 
-set(SOURCE_FILES main.cpp Graph.cpp Graph.h GetTimeMs64.cpp tinyfiledialogs.c EuclidianGraph.cpp EuclidianGraph.h Screen.cpp Screen.h sleep.cpp sleep.h)
+set(SOURCE_FILES main.cpp Graph.cpp GetTimeMs64.cpp EuclidianGraph.cpp Screen.cpp sleep.cpp)
 add_executable(LibGrafos ${SOURCE_FILES})
 
 target_link_libraries(LibGrafos glfw ${GLFW_LIBRARIES} gl3w ${OPENGL_gl_LIBRARY} freetype glm)
