@@ -91,7 +91,7 @@ Screen::~Screen() {
 
 GLfloat bringToRange(float value, float sourceMin, float sourceMax){
   GLfloat x = (value - sourceMin)/(sourceMax - sourceMin);
-  return (x*1.8f) - 0.9f;
+  return (x*1.9f) - 0.95f;
 }
 
 void Screen::drawNodes() {
@@ -137,9 +137,9 @@ void Screen::drawNodes() {
     GLfloat y = bringToRange(node.y, graph->getMinY(), graph->getMaxY());
 
     GLfloat vertices[] = {
-        x-.025f, y-.03f,  0.0f,
-        x,       y+.025f, 0.0f,
-        x+.025f, y-.03f,  0.0f
+        x-.02f, y-.0125f,  0.0f,
+        x,      y+.02f,    0.0f,
+        x+.02f, y-.0125f,  0.0f
     };
     // Update content of VBO memory
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
